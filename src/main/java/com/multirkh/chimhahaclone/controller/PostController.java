@@ -25,7 +25,7 @@ public class PostController {
 
     @GetMapping("/posts")
     public List<PostDto> getPosts(@RequestParam(name = "list_num", required = false, defaultValue = "0") int listNum) {
-        return postRepository.findAll().stream().map(post -> new PostDto(post.getId(),
+        return postRepository.findAll().stream().map(post -> new PostDto(
                 post.getTitle(),
                 post.getContent(),
                 post.getUser().getUsername(),
