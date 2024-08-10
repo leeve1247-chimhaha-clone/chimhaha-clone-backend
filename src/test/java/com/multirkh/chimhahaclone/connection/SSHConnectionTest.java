@@ -1,9 +1,9 @@
-package com.multirkh.chimhahaclone.jsch;
+package com.multirkh.chimhahaclone.connection;
 
 import com.jcraft.jsch.Session;
+import com.multirkh.chimhahaclone.SSHConnection;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,12 +16,6 @@ public class SSHConnectionTest {
 
     @Autowired
     private SSHConnection sshConnection;
-
-    @BeforeEach
-    public void setUp() throws Exception {
-        // 테스트 시작 전에 SSH 연결
-        sshConnection.connect();
-    }
 
     @AfterEach
     public void tearDown() {
