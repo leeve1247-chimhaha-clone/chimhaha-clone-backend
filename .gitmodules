@@ -1,0 +1,3 @@
+[submodule "src/main/resources/credentials"]
+	path = src/main/resources/credentials
+	url = https://github.com/leeve1247/chimhaha-clone-backend-credential
