@@ -56,10 +56,11 @@ class PostRepositoryTest {
 
     @Test
     void findAllTest(){
-        List<PostDto> list = postRepository.findAll().stream().map(entity -> {
-            return
-                    new PostDto(entity.getId(), entity.getTitle(), entity.getContent(), entity.getUser().getUsername(), entity.getStatus());
-        }).toList();
+        List<PostDto> list = postRepository.findAll().stream().map(entity -> new PostDto(
+                entity.getTitle(),
+                entity.getContent(),
+                entity.getUser().getUsername(),
+                entity.getStatus())).toList();
         System.out.println("all = " + list);
     }
 
