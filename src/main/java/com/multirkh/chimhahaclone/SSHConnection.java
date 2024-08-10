@@ -1,4 +1,4 @@
-package com.multirkh.chimhahaclone.jsch;
+package com.multirkh.chimhahaclone;
 
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
@@ -21,6 +21,12 @@ public class SSHConnection {
     @Value("${ssh.privateKeyPath}")
     private String privateKeyPath;
 
+    @Value("${ssh.dbHost}")
+    private String dbHost;
+
+    @Value("${ssh.dbPort}")
+    private int dbPort;
+
     @Getter
     private Session session;
 
@@ -35,6 +41,7 @@ public class SSHConnection {
         session = jsch.getSession(username, host, port);
         session.setConfig("StrictHostKeyChecking", "no");
         session.connect();
+        session.setPortForwardingL(dbPort, dbHost, dbPort);
     }
 
     public void disconnect() {
