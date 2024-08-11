@@ -54,7 +54,7 @@ class PostRepositoryTest {
 
     @Test
     void findAllTest(){
-        List<PostDto> list = postRepository.findAll().stream().map(Post::toDto).toList();
+        List<PostDto> list = postRepository.findAll().stream().map(PostDto::new).toList();
         System.out.println("all = " + list);
     }
 
