@@ -23,6 +23,6 @@ public class PostController {
 
     @GetMapping("/posts")
     public List<PostDto> getPosts(@RequestParam(name = "list_num", required = false, defaultValue = "0") int listNum) {
-        return postRepository.findAll().stream().map(Post::toDto).toList();
+        return postRepository.findAll().stream().map(PostDto::new).toList();
     }
 }

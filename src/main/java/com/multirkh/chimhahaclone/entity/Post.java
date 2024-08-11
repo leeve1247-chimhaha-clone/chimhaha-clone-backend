@@ -35,7 +35,4 @@ public class Post {
 
     private Date editedDate;
 
-    public PostDto toDto() {
-        return new PostDto(this.title, this.user.getUsername(), this.status);
-    }
 }
