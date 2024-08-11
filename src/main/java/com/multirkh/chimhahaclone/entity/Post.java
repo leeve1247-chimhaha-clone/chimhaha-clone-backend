@@ -1,6 +1,7 @@
 package com.multirkh.chimhahaclone.entity;
 
 
+import com.multirkh.chimhahaclone.dto.PostDto;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,4 +34,8 @@ public class Post {
     private Date createdDate;
 
     private Date editedDate;
+
+    public PostDto toDto() {
+        return new PostDto(this.title, this.user.getUsername(), this.status);
+    }
 }
