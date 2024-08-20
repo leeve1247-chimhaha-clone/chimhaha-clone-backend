@@ -20,7 +20,7 @@ class UserRepositoryTest {
     @Test
     void testCreateUser() {
         User user = new User();
-        user.setUsername("testuser");
+        user.setUserName("testuser");
         user.setPassword("password");
         User savedUser = userRepository.save(user);
         assertNotNull(savedUser.getId());
@@ -29,19 +29,19 @@ class UserRepositoryTest {
     @Test
     void testReadUser() {
         User user = new User();
-        user.setUsername("testuser");
+        user.setUserName("testuser");
         user.setPassword("password");
         User savedUser = userRepository.save(user);
 
         Optional<User> foundUser = userRepository.findById(savedUser.getId());
         assertTrue(foundUser.isPresent());
-        assertEquals("testuser", foundUser.get().getUsername());
+        assertEquals("testuser", foundUser.get().getUserName());
     }
 
     @Test
     void testUpdateUser() {
         User user = new User();
-        user.setUsername("testuser");
+        user.setUserName("testuser");
         user.setPassword("password");
         User savedUser = userRepository.save(user);
 
@@ -56,7 +56,7 @@ class UserRepositoryTest {
     @Test
     void testDeleteUser() {
         User user = new User();
-        user.setUsername("testuser");
+        user.setUserName("testuser");
         user.setPassword("password");
         User savedUser = userRepository.save(user);
 
