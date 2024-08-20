@@ -3,6 +3,7 @@ package com.multirkh.chimhahaclone.category;
 import com.multirkh.chimhahaclone.category.subCategory.HOBBY_CATEGORY;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -13,7 +14,7 @@ import java.util.Set;
         uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "level"})}
 )
 @Getter
-
+@NoArgsConstructor
 public class PostCategory {
 
     @Id
@@ -40,9 +41,7 @@ public class PostCategory {
 
     public PostCategory(HOBBY_CATEGORY majorCategory, PostCategory parent) {
         this.name = majorCategory.toString();
+        this.parent = parent;
         this.level = 2;
-    }
-
-    public PostCategory() {
     }
 }
