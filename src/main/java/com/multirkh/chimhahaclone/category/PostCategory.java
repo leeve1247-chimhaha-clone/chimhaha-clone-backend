@@ -21,12 +21,8 @@ public class PostCategory {
     @Column(nullable = false)
     private String name;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_id")
-    private PostCategory parent;
-
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<PostCategory> children = new HashSet<>();
+    private final Set<PostCategory> children = new HashSet<>();
 
     @Column(nullable = false)
     private Integer level;
@@ -38,7 +34,6 @@ public class PostCategory {
 
     public PostCategory(HOBBY_CATEGORY majorCategory, PostCategory parent) {
         this.name = majorCategory.toString();
-        this.parent = parent;
         this.level = 2;
     }
 
