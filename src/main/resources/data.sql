@@ -1,6 +1,6 @@
 -- Update users
-UPDATE users SET password = 'passwordA' WHERE username = 'userA';
-UPDATE users SET password = 'passwordB' WHERE username = 'userB';
+UPDATE users SET password = 'passwordA' WHERE user_name = 'userA';
+UPDATE users SET password = 'passwordB' WHERE user_name = 'userB';
 
 -- Update posts for userA
 UPDATE posts SET title = 'Post 1', content = 'Content for post 1', status = 'POSTED', created_date = NOW(), body = 'Body for post 1', views = 1, category = 'ABOUT' WHERE id = 1;
