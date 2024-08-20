@@ -4,13 +4,17 @@ import com.multirkh.chimhahaclone.category.PostCategory;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @Setter
 @Table(name = "posts")
+@EntityListeners(AuditingEntityListener.class)
 public class Post {
 
     @Id
@@ -36,9 +40,9 @@ public class Post {
     @Enumerated(EnumType.STRING)
     private PostStatus status;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date createdDate;
+    @CreatedDate
+    private LocalDateTime createdDate;
 
-    private Date editedDate;
-
+    @LastModifiedDate
+    private LocalDateTime editedDate;
 }
