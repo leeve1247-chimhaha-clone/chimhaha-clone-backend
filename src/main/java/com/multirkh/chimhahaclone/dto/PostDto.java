@@ -5,14 +5,14 @@ import com.multirkh.chimhahaclone.entity.Post;
 import com.multirkh.chimhahaclone.entity.PostStatus;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 @Data
 public class PostDto {
     private String title;
     private String username;
     private PostStatus status;
-    private LocalDateTime createdDate;
+    private ZonedDateTime createdDate;
     private Integer views;
     private String category;
 
