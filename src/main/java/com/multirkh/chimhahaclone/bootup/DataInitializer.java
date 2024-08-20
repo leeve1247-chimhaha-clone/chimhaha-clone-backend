@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-import static com.multirkh.chimhahaclone.category.MAJOR_CATEGORY.*;
+import static com.multirkh.chimhahaclone.category.MAJOR_CATEGORY.Values.HOBBY;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
@@ -31,7 +31,7 @@ public class DataInitializer implements CommandLineRunner {
 
         for (HOBBY_CATEGORY hobbyCategory : HOBBY_CATEGORY.values()) {
             if (categoryRepository.findByName(hobbyCategory.name()) == null) {
-                categoryRepository.save(new PostCategory(hobbyCategory, categoryRepository.findByName(Values.HOBBY)));
+                categoryRepository.save(new PostCategory(hobbyCategory, categoryRepository.findByName(HOBBY)));
             }
         }
     }
