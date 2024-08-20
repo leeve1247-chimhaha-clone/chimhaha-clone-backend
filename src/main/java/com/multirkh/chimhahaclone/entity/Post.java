@@ -1,7 +1,7 @@
 package com.multirkh.chimhahaclone.entity;
 
 
-import com.multirkh.chimhahaclone.dto.PostDto;
+import com.multirkh.chimhahaclone.category.PostCategory;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,6 +24,11 @@ public class Post {
 
     private String content;
 
+    private Integer views;
+
+    @Enumerated(EnumType.STRING)
+    private PostCategory category;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
@@ -31,6 +36,7 @@ public class Post {
     @Enumerated(EnumType.STRING)
     private PostStatus status;
 
+    @Temporal(TemporalType.TIMESTAMP)
     private Date createdDate;
 
     private Date editedDate;
