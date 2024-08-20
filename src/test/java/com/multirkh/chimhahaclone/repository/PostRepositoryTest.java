@@ -1,7 +1,5 @@
 package com.multirkh.chimhahaclone.repository;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import com.multirkh.chimhahaclone.dto.PostDto;
 import com.multirkh.chimhahaclone.entity.Post;
 import com.multirkh.chimhahaclone.entity.PostStatus;
@@ -15,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 @Slf4j
 @SpringBootTest
 @Transactional
@@ -26,7 +26,7 @@ class PostRepositoryTest {
     @Test
     void testCreatePost() {
         User user = new User();
-        user.setUsername("testuser");
+        user.setUserName("testuser");
         user.setPassword("password");
 
         Post post = new Post();
