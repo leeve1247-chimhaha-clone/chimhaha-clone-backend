@@ -1,6 +1,5 @@
 package com.multirkh.chimhahaclone.entity;
 
-
 import com.multirkh.chimhahaclone.category.PostCategory;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -26,7 +25,8 @@ public class Post {
 
     private Integer views;
 
-    @Enumerated(EnumType.STRING)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
     private PostCategory category;
 
     @ManyToOne(fetch = FetchType.LAZY)
