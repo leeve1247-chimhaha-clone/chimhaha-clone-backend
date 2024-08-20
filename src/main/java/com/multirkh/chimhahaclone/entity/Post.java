@@ -45,4 +45,6 @@ public class Post {
 
     @LastModifiedDate
     private ZonedDateTime editedDate;
+
+    private Integer likes;
 }

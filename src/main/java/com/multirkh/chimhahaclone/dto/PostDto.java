@@ -15,6 +15,7 @@ public class PostDto {
     private ZonedDateTime createdDate;
     private Integer views;
     private String category;
+    private Integer likes;
 
     public PostDto(Post post){
         this.title = post.getTitle();
@@ -23,5 +24,6 @@ public class PostDto {
         this.createdDate = post.getCreatedDate();
         this.views = post.getViews();
         this.category = post.getCategory().getName();
+        this.likes = post.getLikes();
     }
 }
