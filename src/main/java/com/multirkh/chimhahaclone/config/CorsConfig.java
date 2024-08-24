@@ -11,7 +11,6 @@ import java.util.List;
 
 @Configuration
 public class CorsConfig {
-
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http.cors(corsConfigurer -> corsConfigurer.configurationSource(_request -> {
