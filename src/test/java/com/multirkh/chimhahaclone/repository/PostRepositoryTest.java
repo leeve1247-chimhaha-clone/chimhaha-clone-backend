@@ -22,6 +22,8 @@ class PostRepositoryTest {
 
     @Autowired
     private PostRepository postRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     @Test
     void testCreatePost() {
@@ -104,5 +106,14 @@ class PostRepositoryTest {
         postRepository.deleteById(savedPost.getId());
         Optional<Post> foundPost = postRepository.findById(savedPost.getId());
         assertFalse(foundPost.isPresent());
+    }
+
+    @Test
+    void findByUserName(){
+        List<User> userA = userRepository.findByEmail("userA@example.com");
+        List<Post> posts = postRepository.findByUser(userA.getFirst());
+        for(Post post : posts){
+            System.out.println("post = " + post.getContent());
+        }
     }
 }
