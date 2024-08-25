@@ -1,9 +1,15 @@
 package com.multirkh.chimhahaclone.config;
 
+import com.multirkh.chimhahaclone.security.filter.CsrfCookieFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
 
 import java.util.Collections;
@@ -13,14 +19,36 @@ import java.util.List;
 public class CorsConfig {
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
-        http.cors(corsConfigurer -> corsConfigurer.configurationSource(_request -> {
-            CorsConfiguration cors = new CorsConfiguration();
-            cors.setAllowedOrigins(List.of("http://localhost:5173"));
-            cors.setAllowedMethods(List.of("*"));
-            cors.setAllowCredentials(true);
-            cors.setAllowedHeaders(Collections.singletonList("*"));
-            return cors;
-        }));
+
+        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new KeyCloakRoleConverter());
+
+        http
+                .sessionManagement(sessionManagement -> sessionManagement
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .cors(corsConfigurer -> corsConfigurer.configurationSource(_request -> {
+                    CorsConfiguration cors = new CorsConfiguration();
+                    cors.setAllowedOrigins(List.of("http://localhost:5173")); // 외부에서 localhost 으로 서버가 돌아가고 있다.
+                    cors.setAllowedMethods(List.of("*"));
+                    cors.setAllowCredentials(true);
+                    cors.setAllowedHeaders(Collections.singletonList("*"));
+                    cors.setExposedHeaders(List.of("Authorization"));
+                    cors.setMaxAge(3600L);
+                    return cors;
+                }))
+                .csrf(csrf -> csrf
+                        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+                        .ignoringRequestMatchers("/posts")
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+                .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
+                .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/myAccount").hasRole("USER")
+                        .requestMatchers("/posts").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)))
+        ;
         return http.build();
     }
 }
