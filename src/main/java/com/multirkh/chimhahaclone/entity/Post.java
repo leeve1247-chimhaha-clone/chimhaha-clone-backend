@@ -3,6 +3,7 @@ package com.multirkh.chimhahaclone.entity;
 import com.multirkh.chimhahaclone.category.PostCategory;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -14,6 +15,7 @@ import java.time.ZonedDateTime;
 @Getter
 @Table(name = "posts")
 @EntityListeners(AuditingEntityListener.class)
+@NoArgsConstructor
 public class Post {
 
     @Id
