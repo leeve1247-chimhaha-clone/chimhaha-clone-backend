@@ -1,12 +1,13 @@
 package com.multirkh.chimhahaclone.category;
 
 import com.multirkh.chimhahaclone.category.subCategory.HOBBY_CATEGORY;
+import com.multirkh.chimhahaclone.entity.Post;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(
@@ -29,7 +30,10 @@ public class PostCategory {
     private PostCategory parent;
 
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
-    private final Set<PostCategory> children = new HashSet<>();
+    private final List<PostCategory> children = new ArrayList<>();
+
+    @OneToMany(mappedBy = "category")
+    private final List<Post> posts = new ArrayList<>();
 
     @Column(nullable = false)
     private Integer level;
