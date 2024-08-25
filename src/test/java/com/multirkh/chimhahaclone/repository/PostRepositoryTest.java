@@ -29,11 +29,15 @@ class PostRepositoryTest {
         user.setUserName("testuser");
         user.setPassword("password");
 
-        Post post = new Post();
-        post.setTitle("Test Post");
-        post.setContent("This is a test post.");
-        post.setStatus(PostStatus.POSTED);
-        post.setUser(user);
+        Post post = new Post(
+                "Test Post",
+                "This is a test post.",
+                "This is a test post.",
+                0,
+                null,
+                user,
+                0
+        );
         Post savedPost = postRepository.save(post);
         log.info("Saved post: {}", savedPost);
         assertNotNull(savedPost.getId());
@@ -41,10 +45,15 @@ class PostRepositoryTest {
 
     @Test
     void testReadPost() {
-        Post post = new Post();
-        post.setTitle("Test Post");
-        post.setContent("This is a test post.");
-        post.setStatus(PostStatus.POSTED);
+        Post post = new Post(
+                "Test Post",
+                "This is a test post.",
+                "This is a test post.",
+                0,
+                null,
+                null,
+                0
+        );
         Post savedPost = postRepository.save(post);
 
         Optional<Post> foundPost = postRepository.findById(savedPost.getId());
@@ -60,13 +69,16 @@ class PostRepositoryTest {
 
     @Test
     void testUpdatePost() {
-        Post post = new Post();
-        post.setTitle("Test Post");
-        post.setContent("This is a test post.");
-        post.setStatus(PostStatus.POSTED);
+        Post post = new Post(
+                "Test Post",
+                "This is a test post.",
+                "Updated content.",
+                0,
+                null,
+                null,
+                0
+        );
         Post savedPost = postRepository.save(post);
-
-        savedPost.setContent("Updated content.");
         savedPost.setStatus(PostStatus.EDITED);
         Post updatedPost = postRepository.save(savedPost);
 
@@ -78,10 +90,15 @@ class PostRepositoryTest {
 
     @Test
     void testDeletePost() {
-        Post post = new Post();
-        post.setTitle("Test Post");
-        post.setContent("This is a test post.");
-        post.setStatus(PostStatus.POSTED);
+        Post post = new Post(
+                "Test Post",
+                "This is a test post.",
+                "This is a test post.",
+                0,
+                null,
+                null,
+                0
+        );
         Post savedPost = postRepository.save(post);
 
         postRepository.deleteById(savedPost.getId());
