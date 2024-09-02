@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="docker-compose.yml.my-spring-container: Compose Deployment" type="docker-deploy" factoryName="docker-compose.yml" server-name="DockerRemote">
+  <configuration default="false" name="chimhahabackend" type="docker-deploy" factoryName="docker-compose.yml" server-name="DockerRemote">
     <deployment type="docker-compose.yml">
       <settings>
         <option name="composeProjectName" value="my-project" />

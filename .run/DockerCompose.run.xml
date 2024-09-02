@@ -6,8 +6,8 @@
         <option name="envFilePath" value="" />
         <option name="services">
           <list>
-            <option value="mysql-container" />
             <option value="my-spring-container" />
+            <option value="mysql-container" />
           </list>
         </option>
         <option name="sourceFilePath" value="docker-compose.yml" />
