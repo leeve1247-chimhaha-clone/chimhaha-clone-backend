@@ -16,6 +16,7 @@ public class PostDto {
     private Integer views;
     private String category;
     private Integer likes;
+    private Integer postId;
 
     public PostDto(Post post){
         this.title = post.getTitle();
@@ -25,5 +26,6 @@ public class PostDto {
         this.views = post.getViews();
         this.category = post.getCategory().getName();
         this.likes = post.getLikes();
+        this.postId = post.getId().intValue();
     }
 }
