@@ -15,7 +15,7 @@ import java.util.Collections;
 import java.util.List;
 
 @Configuration
-public class CorsConfig {
+public class SecurityConfig {
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -35,6 +35,7 @@ public class CorsConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/myAccount").hasRole("USER")
                         .requestMatchers("/posts").permitAll()
+                        .requestMatchers("/save").hasRole("USER")
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exceptions -> exceptions
