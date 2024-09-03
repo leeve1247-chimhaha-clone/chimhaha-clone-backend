@@ -1,10 +1,13 @@
 package com.multirkh.chimhahaclone.entity;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.multirkh.chimhahaclone.category.PostCategory;
+import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Type;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -27,6 +30,10 @@ public class Post {
     private String body;
 
     private String content;
+
+    @Type(JsonType.class)
+    @Column(columnDefinition = "json")
+    private JsonNode jsonContent;
 
     private Integer views;
 
@@ -58,5 +65,15 @@ public class Post {
         this.category = category;
         this.user = user;
         this.likes = likes;
+    }
+
+    public Post(String title, JsonNode jsonContent, User user, PostCategory postCategory){
+        this.title = title;
+        this.jsonContent = jsonContent;
+        this.user = user;
+        this.views = 0;
+        this.likes = 0;
+        this.category = postCategory;
+        this.status = PostStatus.POSTED;
     }
 }
