@@ -2,9 +2,11 @@ package com.multirkh.chimhahaclone.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.multirkh.chimhahaclone.category.PostCategory;
+import com.multirkh.chimhahaclone.dto.PostDetailDto;
 import com.multirkh.chimhahaclone.dto.PostDto;
 import com.multirkh.chimhahaclone.dto.PostReceived;
 import com.multirkh.chimhahaclone.entity.Post;
+import com.multirkh.chimhahaclone.entity.PostStatus;
 import com.multirkh.chimhahaclone.entity.User;
 import com.multirkh.chimhahaclone.repository.PostCategoryRepository;
 import com.multirkh.chimhahaclone.repository.PostRepository;
@@ -13,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,8 +31,24 @@ public class PostController {
     }
 
     @GetMapping("/posts")
-    public List<PostDto> getPosts(@RequestParam(name = "list_num", required = false, defaultValue = "0") int listNum) {
+    public List<PostDto> getPosts() {
         return postRepository.findAllByOrderByCreatedDateDesc().stream().map(PostDto::new).toList();
+    }
+
+    @GetMapping("/posts/detail")
+    public PostDetailDto getPosts(@RequestParam(name = "num", defaultValue = "0") Long listNum) {
+        Optional<Post> optionalPostEntity = postRepository.findById(listNum);
+        if (optionalPostEntity.isEmpty()) {
+            return null;
+        } else {
+            Post postEntity = optionalPostEntity.get();
+            if (postEntity.getStatus() == PostStatus.DELETED) {
+                return null;
+            }
+            else {
+                return optionalPostEntity.stream().map(PostDetailDto::new).findFirst().get();
+            }
+        }
     }
 
     @PostMapping("/save")

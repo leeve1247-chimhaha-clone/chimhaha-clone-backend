@@ -35,6 +35,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/myAccount").hasRole("USER")
                         .requestMatchers("/posts").permitAll()
+                        .requestMatchers("/posts/detail").permitAll()
                         .requestMatchers("/save").hasRole("USER")
                         .anyRequest().authenticated()
                 )
