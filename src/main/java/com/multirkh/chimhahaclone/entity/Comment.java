@@ -54,5 +54,21 @@ public class Comment {
         this.post = post;
         this.user = user;
         this.likes = likes;
+
+        if (!post.getComments().contains(this)){post.getComments().add(this);};
+        if (!user.getComments().contains(this)){user.getComments().add(this);};
+    }
+
+    // 답글
+    public Comment(JsonNode content, Post post, User user, Integer likes, Comment parent) {
+        this.content = content;
+        this.post = post;
+        this.user = user;
+        this.likes = likes;
+        this.parent = parent;
+
+        if (!post.getComments().contains(this)){post.getComments().add(this);};
+        if (!user.getComments().contains(this)){user.getComments().add(this);};
+        if (!parent.getChildren().contains(this)){parent.getChildren().add(this);};
     }
 }

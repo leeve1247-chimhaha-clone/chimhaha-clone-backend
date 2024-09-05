@@ -19,6 +19,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -65,7 +66,6 @@ class PostRepositoryTest {
         commentRepository.save(new Comment(jsonNodeOf("{\"ops\": [{\"insert\": \"comment sample 5\\n\"}]}"), post2, user2, 0));
         log.info(String.valueOf(System.identityHashCode(post1)));
         em.flush();
-
     }
 
     @Test
@@ -106,4 +106,8 @@ class PostRepositoryTest {
         assertThat(post.getComments()).isNotNull();
         assertThat(post.getComments().size()).isGreaterThan(0);
     }
+
+    @Test
+    @Rollback(false)
+    public void saveTestedDate(){}
 }
