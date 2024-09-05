@@ -1,4 +1,4 @@
-// src/main/java/com/multirkh/chimhahaclone/dto/PostDto.java
+// src/main/java/com/multirkh/chimhahaclone/dto/PostListComponentDto.java
 package com.multirkh.chimhahaclone.dto;
 
 import com.fasterxml.jackson.databind.JsonNode;

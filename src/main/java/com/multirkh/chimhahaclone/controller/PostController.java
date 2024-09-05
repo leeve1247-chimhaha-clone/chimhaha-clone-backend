@@ -3,7 +3,7 @@ package com.multirkh.chimhahaclone.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.multirkh.chimhahaclone.category.PostCategory;
 import com.multirkh.chimhahaclone.dto.PostDetailDto;
-import com.multirkh.chimhahaclone.dto.PostDto;
+import com.multirkh.chimhahaclone.dto.PostListComponentDto;
 import com.multirkh.chimhahaclone.dto.PostReceived;
 import com.multirkh.chimhahaclone.entity.Post;
 import com.multirkh.chimhahaclone.entity.PostStatus;
@@ -31,8 +31,8 @@ public class PostController {
     }
 
     @GetMapping("/posts")
-    public List<PostDto> getPosts() {
-        return postRepository.findAllByOrderByCreatedDateDesc().stream().map(PostDto::new).toList();
+    public List<PostListComponentDto> getPosts() {
+        return postRepository.findAllByOrderByCreatedDateDesc().stream().map(PostListComponentDto::new).toList();
     }
 
     @GetMapping("/posts/detail")
@@ -55,8 +55,6 @@ public class PostController {
     public String savePost(
             @RequestBody PostReceived request
     ) {
-        System.out.println("request = " + request);
-        System.out.println("request = " + request.getPostCategoryName());
         PostCategory postCategory = postCategoryRepository.findByName(request.getPostCategoryName());
         JsonNode jsonContent = request.getContent();
         String userAuthId = request.getUser();
