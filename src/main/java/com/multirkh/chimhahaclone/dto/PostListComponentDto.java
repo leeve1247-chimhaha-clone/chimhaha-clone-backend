@@ -1,4 +1,4 @@
-// src/main/java/com/multirkh/chimhahaclone/dto/PostDto.java
+// src/main/java/com/multirkh/chimhahaclone/dto/PostListComponentDto.java
 package com.multirkh.chimhahaclone.dto;
 
 import com.multirkh.chimhahaclone.entity.Post;
@@ -8,7 +8,7 @@ import lombok.Data;
 import java.time.ZonedDateTime;
 
 @Data
-public class PostDto {
+public class PostListComponentDto {
     private String title;
     private String username;
     private PostStatus status;
@@ -18,7 +18,7 @@ public class PostDto {
     private Integer likes;
     private Integer postId;
 
-    public PostDto(Post post){
+    public PostListComponentDto(Post post){
         this.title = post.getTitle();
         this.username = post.getUser().getUserName();
         this.status = post.getStatus();
