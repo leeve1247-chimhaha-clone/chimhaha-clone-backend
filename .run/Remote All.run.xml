@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="DockerCompose" type="docker-deploy" factoryName="docker-compose.yml" server-name="DockerRemote">
+  <configuration default="false" name="Remote All" type="docker-deploy" factoryName="docker-compose.yml" server-name="DockerRemote">
     <deployment type="docker-compose.yml">
       <settings>
         <option name="composeProjectName" value="my-project" />
