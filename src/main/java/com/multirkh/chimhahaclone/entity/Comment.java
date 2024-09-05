@@ -18,6 +18,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
+@Table(name = "comments")
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,7 +33,7 @@ public class Comment {
 
     @Type(JsonType.class)
     @Column(columnDefinition = "json")
-    private JsonNode body;
+    private JsonNode content;
 
     private Integer likes;
 

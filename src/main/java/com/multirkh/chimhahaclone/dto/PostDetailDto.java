@@ -7,6 +7,7 @@ import com.multirkh.chimhahaclone.entity.PostStatus;
 import lombok.Data;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 
 @Data
 public class PostDetailDto {
@@ -19,6 +20,7 @@ public class PostDetailDto {
     private Integer likes;
     private Integer postId;
     private JsonNode content;
+    private List<CommentDto> comments;
 
     public PostDetailDto(Post post){
         this.title = post.getTitle();

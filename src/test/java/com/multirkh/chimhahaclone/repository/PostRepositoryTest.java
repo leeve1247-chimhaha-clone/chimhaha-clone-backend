@@ -67,4 +67,9 @@ class PostRepositoryTest {
         log.info(String.valueOf(post.getJsonContent()));
         log.info("====================================");
     }
+
+    @Test
+    void loadPostDetailDto(){
+
+    }
 }

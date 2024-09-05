@@ -34,4 +34,9 @@ public class User {
     public User(String userAuthId){
         this.userAuthId = userAuthId;
     }
+
+    public User(String userAuthId, String userName){
+        this.userAuthId = userAuthId;
+        this.userName = userName;
+    }
 }
