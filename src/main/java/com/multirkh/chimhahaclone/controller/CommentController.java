@@ -33,7 +33,7 @@ public class CommentController {
         if (postRepository.findById(request.getPostId()).isEmpty()) return "There is no post";
         Post post = postRepository.findById(request.getPostId()).get();
         Comment comment = new Comment();
-        comment.setBody(jsonContent);
+        comment.setContent(jsonContent);
         comment.setPost(post);
         comment.setLikes(0);
         comment.setUser(user);
