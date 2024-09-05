@@ -32,11 +32,8 @@ public class CommentController {
         JsonNode jsonContent = request.getContent();
         if (postRepository.findById(request.getPostId()).isEmpty()) return "There is no post";
         Post post = postRepository.findById(request.getPostId()).get();
-        Comment comment = new Comment();
-        comment.setContent(jsonContent);
-        comment.setPost(post);
-        comment.setLikes(0);
-        comment.setUser(user);
+        Comment comment = new Comment(jsonContent, post, user, 0);
+
         commentRepository.save(comment);
         return "Your comment has saved very well";
     }
