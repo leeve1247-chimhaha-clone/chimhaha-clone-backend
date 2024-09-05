@@ -1,7 +1,5 @@
 services:
   my-spring-container:
-    ports:
-      - "8080:8080"  # 호스트와 컨테이너 간의 포트 매핑
     container_name: my-spring-container
     build:
       context: .
@@ -11,14 +9,14 @@ services:
         ipv4_address: 172.22.0.3
   mysql-container:
     ports:
-      - "3306:3306"  # 호스트와 컨테이너 간의 포트 매핑
+      - "3308:3306"  # 호스트와 컨테이너 간의 포트 매핑
     container_name: mysql-container
     image: mysql:latest
     volumes:
       - mysql-container-data:/var/lib/mysql
     networks:
       my-network:
-        ipv4_address: 172.22.0.2
+        ipv4_address: 172.22.0.4
 volumes:
     mysql-container-data:
 networks:
