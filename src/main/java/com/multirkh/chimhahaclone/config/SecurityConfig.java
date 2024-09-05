@@ -38,6 +38,7 @@ public class SecurityConfig {
                         .requestMatchers("/posts/detail").permitAll()
                         .requestMatchers("/save").hasRole("USER")
                         .requestMatchers("/save/comment").hasRole("USER")
+                        .requestMatchers("/getMyNickName").hasRole("USER")
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exceptions -> exceptions
