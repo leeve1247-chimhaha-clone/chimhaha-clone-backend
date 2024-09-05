@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -25,7 +26,10 @@ public class User {
     private String userAuthId;
 
     @OneToMany(mappedBy = "user") // mappedBy: 연관관계의 주인이 아님을 나타냄 (읽기 전용) DB 에선 안보임
-    private List<Post> posts;
+    private final List<Post> posts = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private final List<Comment> comments = new ArrayList<>();
 
     public User(String userAuthId){
         this.userAuthId = userAuthId;
