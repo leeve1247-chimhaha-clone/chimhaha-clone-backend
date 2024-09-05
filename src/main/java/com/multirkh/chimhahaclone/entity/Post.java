@@ -29,10 +29,6 @@ public class Post {
 
     private String title;
 
-    private String body;
-
-    private String content;
-
     @Type(JsonType.class)
     @Column(columnDefinition = "json")
     private JsonNode jsonContent;
@@ -61,16 +57,6 @@ public class Post {
     private ZonedDateTime editedDate;
 
     private Integer likes;
-
-    public Post(String title, String body, String content, Integer views, PostCategory category, User user, Integer likes) {
-        this.title = title;
-        this.body = body;
-        this.content = content;
-        this.views = views;
-        this.category = category;
-        this.user = user;
-        this.likes = likes;
-    }
 
     public Post(String title, JsonNode jsonContent, User user, PostCategory postCategory){
         this.title = title;
