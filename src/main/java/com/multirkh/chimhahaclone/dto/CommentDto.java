@@ -8,7 +8,7 @@ import java.util.Optional;
 public class CommentDto {
     private String username;
     private Optional<CommentDto> parentComment;
-    private Optional<PostDto> post;
+    private Optional<PostListComponentDto> post;
     private JsonNode content;
 
     public CommentDto(Comment comment) {
