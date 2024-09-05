@@ -58,6 +58,7 @@ public class Post {
 
     private Integer likes;
 
+    //신규 생성
     public Post(String title, JsonNode jsonContent, User user, PostCategory postCategory){
         this.title = title;
         this.jsonContent = jsonContent;
