@@ -5,7 +5,6 @@ import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.hibernate.annotations.Type;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -16,7 +15,6 @@ import java.util.List;
 
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor
 @Table(name = "comments")
 public class Comment {
@@ -50,4 +48,11 @@ public class Comment {
 
     @LastModifiedDate
     private ZonedDateTime editedDate;
+
+    public Comment(JsonNode content, Post post, User user, Integer likes) {
+        this.content = content;
+        this.post = post;
+        this.user = user;
+        this.likes = likes;
+    }
 }
