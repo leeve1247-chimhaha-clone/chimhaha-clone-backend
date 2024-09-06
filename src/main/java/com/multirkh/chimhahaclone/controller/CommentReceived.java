@@ -9,4 +9,5 @@ import lombok.Setter;
 public class CommentReceived {
     private JsonNode content;
     private Long postId;
+    private Long commentId;
 }
