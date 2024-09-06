@@ -9,6 +9,7 @@ import com.multirkh.chimhahaclone.repository.PostCategoryRepository;
 import com.multirkh.chimhahaclone.repository.PostRepository;
 import com.multirkh.chimhahaclone.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 public class CommentController {
 
     private final PostRepository postRepository;
@@ -32,9 +34,15 @@ public class CommentController {
         JsonNode jsonContent = request.getContent();
         if (postRepository.findById(request.getPostId()).isEmpty()) return "There is no post";
         Post post = postRepository.findById(request.getPostId()).get();
-        Comment comment = new Comment(jsonContent, post, user, 0);
-
-        commentRepository.save(comment);
+        if (request.getCommentId() == null) {
+            Comment comment = new Comment(jsonContent, post, user, 0);
+            commentRepository.save(comment);
+        }
+        else {
+            Comment parent = commentRepository.findById(request.getCommentId()).orElse(null);
+            Comment comment = new Comment(jsonContent, post, user, 0, parent);
+            commentRepository.save(comment);
+        }
         return "Your comment has saved very well";
     }
 }
