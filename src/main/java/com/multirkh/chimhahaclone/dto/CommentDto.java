@@ -2,16 +2,16 @@ package com.multirkh.chimhahaclone.dto;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.multirkh.chimhahaclone.entity.Comment;
+import lombok.Getter;
 
-import java.util.Optional;
-
+@Getter
 public class CommentDto {
-    private String username;
-    private Optional<CommentDto> parentComment;
-    private Optional<PostListComponentDto> post;
-    private JsonNode content;
+    private final String username;
+    private final JsonNode content;
+    private Long id;
 
     public CommentDto(Comment comment) {
+        this.id = comment.getId();
         this.username = comment.getUser().getUserName();
         this.content = comment.getContent();
     }

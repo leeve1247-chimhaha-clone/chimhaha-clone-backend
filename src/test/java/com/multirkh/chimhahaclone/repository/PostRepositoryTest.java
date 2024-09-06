@@ -6,6 +6,8 @@ import com.multirkh.chimhahaclone.bootup.DataInitializer;
 import com.multirkh.chimhahaclone.category.PostCategory;
 import com.multirkh.chimhahaclone.config.JwtDecoderTestConfig;
 import com.multirkh.chimhahaclone.config.TestPostRepository;
+import com.multirkh.chimhahaclone.dto.CommentDto;
+import com.multirkh.chimhahaclone.dto.PostDetailDto;
 import com.multirkh.chimhahaclone.entity.Comment;
 import com.multirkh.chimhahaclone.entity.Post;
 import com.multirkh.chimhahaclone.entity.User;
@@ -65,7 +67,8 @@ class PostRepositoryTest {
         commentRepository.save(new Comment(jsonNodeOf("{\"ops\": [{\"insert\": \"comment sample 4\\n\"}]}"), post2, user1, 0));
         commentRepository.save(new Comment(jsonNodeOf("{\"ops\": [{\"insert\": \"comment sample 5\\n\"}]}"), post2, user2, 0));
         log.info(String.valueOf(System.identityHashCode(post1)));
-        em.flush();
+        em.flush(); // db commit
+        em.clear(); // clear entities
     }
 
     @Test
@@ -106,6 +109,16 @@ class PostRepositoryTest {
         assertThat(post.getComments()).isNotNull();
         assertThat(post.getComments().size()).isGreaterThan(0);
     }
+
+    @Test
+    public void testGetPostDetail(){
+        Post post = postRepository.findByTitleEquals("Test Post 3").orElseThrow(() -> new EntityNotFoundException("Post not found"));
+        PostDetailDto postDetailDto = new PostDetailDto(post);
+        for (CommentDto comment : postDetailDto.getComments()){
+            log.info(String.valueOf(comment.getContent()));
+        }
+    }
+
 
     @Test
     @Rollback(false)

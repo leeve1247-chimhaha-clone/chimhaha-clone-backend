@@ -32,5 +32,6 @@ public class PostDetailDto {
         this.likes = post.getLikes();
         this.postId = post.getId().intValue();
         this.content = post.getJsonContent();
+        this.comments = post.getComments().stream().map(CommentDto::new).toList();
     }
 }
