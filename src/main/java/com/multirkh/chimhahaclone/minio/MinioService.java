@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Objects;
+
 @Service
 @RequiredArgsConstructor
 public class MinioService {
@@ -20,20 +22,23 @@ public class MinioService {
 
     public String postFileWithRandomFileName(MultipartFile file){
         String randomImageName = IdGenerator.generateUniqueId();
+        String randomImageFileName = randomImageName + "." + Objects.requireNonNull(file.getContentType()).split("/")[1];
+
         try {
             minioClient.putObject(
                     PutObjectArgs.builder().bucket(minioBucketName).object(
-                                    randomImageName
+                                    randomImageFileName
                             ).stream(file.getInputStream(), file.getSize(), -1)
                             .contentType(file.getContentType())
                             .build());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        return randomImageName;
+        return randomImageFileName;
     }
 
-    public String getPreviewUrl(String randomImageName) {
-        return minioExportUrl + "/api/v1/buckets/" + minioBucketName + "/objects/download?preview=true&prefix=" + randomImageName;
+    // randomImageFileName : "파일이름 명.확장자" ex : "this_is_random_string_20.png"
+    public String getPreviewUrl(String randomImageFileName) {
+        return minioExportUrl + "/api/v1/buckets/" + minioBucketName + "/objects/download?preview=true&prefix=" + randomImageFileName;
     }
 }
