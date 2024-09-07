@@ -44,8 +44,7 @@ public class PostController {
             Post postEntity = optionalPostEntity.get();
             if (postEntity.getStatus() == PostStatus.DELETED) {
                 return null;
-            }
-            else {
+            } else {
                 return optionalPostEntity.stream().map(PostDetailDto::new).findFirst().get();
             }
         }
@@ -58,14 +57,16 @@ public class PostController {
         PostCategory postCategory = postCategoryRepository.findByName(request.getPostCategoryName());
         JsonNode jsonContent = request.getContent();
         String userAuthId = request.getUser();
+        String titleImageId = request.getTitleImage();
+        String title = request.getTitle();
+
         User user = userRepository.findByUserAuthId(userAuthId);
-        if(user == null){
+        if (user == null) {
             user = new User(userAuthId);
             userRepository.save(user);
         }
-        System.out.println("jsonContent = " + jsonContent);
-        String title = request.getTitle();
-        Post post = new Post(title, jsonContent, user, postCategory);
+
+        Post post = new Post(title, jsonContent, user, postCategory, titleImageId);
         Post save = postRepository.save(post);
         return "Post saved!";
     }
