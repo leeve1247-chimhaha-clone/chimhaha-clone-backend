@@ -40,6 +40,7 @@ dependencies {
     implementation group: 'com.github.mwiede', name: 'jsch', version: '0.2.18'
     testCompileOnly'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
+    implementation group: 'io.minio', name: 'minio', version: '8.5.12'
 
 }
 
