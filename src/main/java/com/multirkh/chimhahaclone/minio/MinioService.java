@@ -16,9 +16,6 @@ public class MinioService {
     @Value("${minio.bucket-name}")
     private String minioBucketName;
 
-    @Value("${minio.url}")
-    private String minioUrl;
-
     private final MinioClient minioClient;
 
     public String postFileWithRandomFileName(MultipartFile file){
