@@ -8,6 +8,7 @@ import com.multirkh.chimhahaclone.repository.CommentRepository;
 import com.multirkh.chimhahaclone.repository.PostCategoryRepository;
 import com.multirkh.chimhahaclone.repository.PostRepository;
 import com.multirkh.chimhahaclone.repository.UserRepository;
+import jakarta.annotation.security.RolesAllowed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,6 +27,7 @@ public class CommentController {
     private final CommentRepository commentRepository;
 
     @PostMapping("/save/comment")
+    @RolesAllowed("USER")
     public String saveComment(
             @RequestBody CommentReceived request
     ) {

@@ -11,6 +11,7 @@ import com.multirkh.chimhahaclone.entity.User;
 import com.multirkh.chimhahaclone.repository.PostCategoryRepository;
 import com.multirkh.chimhahaclone.repository.PostRepository;
 import com.multirkh.chimhahaclone.repository.UserRepository;
+import jakarta.annotation.security.RolesAllowed;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,6 +37,7 @@ public class PostController {
     }
 
     @GetMapping("/posts/detail")
+    @RolesAllowed("USER")
     public PostDetailDto getPosts(@RequestParam(name = "num", defaultValue = "0") Long listNum) {
         Optional<Post> optionalPostEntity = postRepository.findById(listNum);
         if (optionalPostEntity.isEmpty()) {
@@ -51,6 +53,7 @@ public class PostController {
     }
 
     @PostMapping("/save")
+    @RolesAllowed("USER")
     public String savePost(
             @RequestBody PostReceived request
     ) {

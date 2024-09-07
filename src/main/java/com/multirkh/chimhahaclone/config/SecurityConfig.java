@@ -33,12 +33,8 @@ public class SecurityConfig {
                 }))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/myAccount").hasRole("USER")
                         .requestMatchers("/posts").permitAll()
                         .requestMatchers("/posts/detail").permitAll()
-                        .requestMatchers("/save").hasRole("USER")
-                        .requestMatchers("/save/comment").hasRole("USER")
-                        .requestMatchers("/getMyNickName").hasRole("USER")
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exceptions -> exceptions
