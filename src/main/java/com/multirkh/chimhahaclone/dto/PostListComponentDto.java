@@ -3,20 +3,21 @@ package com.multirkh.chimhahaclone.dto;
 
 import com.multirkh.chimhahaclone.entity.Post;
 import com.multirkh.chimhahaclone.entity.PostStatus;
-import lombok.Data;
+import lombok.Getter;
 
 import java.time.ZonedDateTime;
 
-@Data
+@Getter
 public class PostListComponentDto {
-    private String title;
-    private String username;
-    private PostStatus status;
-    private ZonedDateTime createdDate;
-    private Integer views;
-    private String category;
-    private Integer likes;
-    private Integer postId;
+    private final String title;
+    private final String username;
+    private final PostStatus status;
+    private final ZonedDateTime createdDate;
+    private final Integer views;
+    private final String category;
+    private final Integer likes;
+    private final Integer postId;
+    private final String titleImageId;
 
     public PostListComponentDto(Post post){
         this.title = post.getTitle();
@@ -27,5 +28,6 @@ public class PostListComponentDto {
         this.category = post.getCategory().getName();
         this.likes = post.getLikes();
         this.postId = post.getId().intValue();
+        this.titleImageId = post.getTitleImageFileName();
     }
 }
