@@ -37,7 +37,6 @@ public class PostController {
     }
 
     @GetMapping("/posts/detail")
-    @RolesAllowed("USER")
     public PostDetailDto getPosts(@RequestParam(name = "num", defaultValue = "0") Long listNum) {
         Optional<Post> optionalPostEntity = postRepository.findById(listNum);
         if (optionalPostEntity.isEmpty()) {
@@ -60,11 +59,14 @@ public class PostController {
         PostCategory postCategory = postCategoryRepository.findByName(request.getPostCategoryName());
         JsonNode jsonContent = request.getContent();
         String userAuthId = request.getUser();
-        String titleImageId = request.getTitleImage();
+        String titleImageFileName = request.getTitleImageFileName();
         String title = request.getTitle();
+        if (title == null) {
+            throw new IllegalArgumentException("title is null");
+        }
         User user = userRepository.findByUserAuthId(userAuthId);
-        Post post = new Post(title, jsonContent, user, postCategory, titleImageId);
-        Post save = postRepository.save(post);
-        return "Post saved!";
+        Post post = new Post(title, jsonContent, user, postCategory, titleImageFileName);
+        postRepository.save(post);
+        return post.getId().toString();
     }
 }

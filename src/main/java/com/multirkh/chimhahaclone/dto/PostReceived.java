@@ -13,5 +13,6 @@ public class PostReceived {
     private JsonNode content;
     private String title;
     private String user;
-    private String titleImage;
+    @JsonProperty("titleImage")
+    private String titleImageFileName;
 }
