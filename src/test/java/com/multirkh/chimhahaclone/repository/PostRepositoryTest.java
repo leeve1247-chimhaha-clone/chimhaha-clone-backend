@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.multirkh.chimhahaclone.bootup.DataInitializer;
 import com.multirkh.chimhahaclone.category.PostCategory;
 import com.multirkh.chimhahaclone.config.JwtDecoderTestConfig;
+import com.multirkh.chimhahaclone.config.MockImageController;
 import com.multirkh.chimhahaclone.config.TestPostRepository;
 import com.multirkh.chimhahaclone.dto.CommentDto;
 import com.multirkh.chimhahaclone.dto.PostDetailDto;
@@ -20,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +38,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Transactional
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class PostRepositoryTest {
+    @MockBean
+    private MockImageController mockImageController;
+
     @Autowired
     private TestPostRepository postRepository;
     @Autowired
@@ -69,6 +74,7 @@ class PostRepositoryTest {
         log.info(String.valueOf(System.identityHashCode(post1)));
         em.flush(); // db commit
         em.clear(); // clear entities
+        log.info("===============End Before Init=================");
     }
 
     @Test
@@ -117,6 +123,16 @@ class PostRepositoryTest {
         for (CommentDto comment : postDetailDto.getComments()){
             log.info(String.valueOf(comment.getContent()));
         }
+    }
+
+    @Test
+    public void testGetPostDetail2(){
+        Post post = postRepository.findByTitleEquals("Test Post 3").orElseThrow(() -> new EntityNotFoundException("Post not found"));
+        PostDetailDto postDetailDto = new PostDetailDto(post);
+        JsonNode content = postDetailDto.getContent();
+        JsonNode ops = content.get("ops");
+        log.info(String.valueOf(content));
+        log.info(String.valueOf(ops));
     }
 
 
