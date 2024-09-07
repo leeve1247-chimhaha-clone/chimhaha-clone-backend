@@ -59,13 +59,7 @@ public class PostController {
         String userAuthId = request.getUser();
         String titleImageId = request.getTitleImage();
         String title = request.getTitle();
-
         User user = userRepository.findByUserAuthId(userAuthId);
-        if (user == null) {
-            user = new User(userAuthId);
-            userRepository.save(user);
-        }
-
         Post post = new Post(title, jsonContent, user, postCategory, titleImageId);
         Post save = postRepository.save(post);
         return "Post saved!";
