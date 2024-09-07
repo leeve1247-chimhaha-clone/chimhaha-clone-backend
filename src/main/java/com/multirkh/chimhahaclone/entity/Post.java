@@ -43,6 +43,8 @@ public class Post {
     @JoinColumn(name = "user_id")
     private User user;
 
+    private String titleImageId;
+
     @Setter
     @Enumerated(EnumType.STRING)
     private PostStatus status;
@@ -59,7 +61,7 @@ public class Post {
     private Integer likes;
 
     //신규 생성
-    public Post(String title, JsonNode jsonContent, User user, PostCategory postCategory){
+    public Post(String title, JsonNode jsonContent, User user, PostCategory postCategory, String titleImageId) {
         this.title = title;
         this.jsonContent = jsonContent;
         this.user = user;
@@ -67,5 +69,6 @@ public class Post {
         this.likes = 0;
         this.category = postCategory;
         this.status = PostStatus.POSTED;
+        this.titleImageId = titleImageId;
     }
 }
