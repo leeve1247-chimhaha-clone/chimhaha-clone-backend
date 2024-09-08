@@ -27,14 +27,18 @@ public class Post {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Setter
     private String title;
 
+    @Setter
     @Type(JsonType.class)
     @Column(columnDefinition = "json")
     private JsonNode jsonContent;
 
+    @Setter
     private Integer views;
 
+    @Setter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private PostCategory category;
@@ -43,6 +47,7 @@ public class Post {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Setter
     private String titleImageFileName;
 
     @Setter
