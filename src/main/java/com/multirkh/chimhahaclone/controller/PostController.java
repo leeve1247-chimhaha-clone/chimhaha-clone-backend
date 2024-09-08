@@ -8,6 +8,7 @@ import com.multirkh.chimhahaclone.dto.PostReceived;
 import com.multirkh.chimhahaclone.entity.Post;
 import com.multirkh.chimhahaclone.entity.PostStatus;
 import com.multirkh.chimhahaclone.entity.User;
+import com.multirkh.chimhahaclone.redis.ViewCountService;
 import com.multirkh.chimhahaclone.repository.PostCategoryRepository;
 import com.multirkh.chimhahaclone.repository.PostRepository;
 import com.multirkh.chimhahaclone.repository.UserRepository;
@@ -25,6 +26,7 @@ public class PostController {
     private final PostRepository postRepository;
     private final PostCategoryRepository postCategoryRepository;
     private final UserRepository userRepository;
+    private final ViewCountService viewCountService;
 
     @GetMapping("/")
     public String home() {
@@ -45,6 +47,7 @@ public class PostController {
 
     @GetMapping("/posts/detail")
     public PostDetailDto getPosts(@RequestParam(name = "num", defaultValue = "0") Long listNum) {
+        viewCountService.incrementViewCount(listNum);
         Post postEntity = postRepository.findById(listNum).orElseThrow(() -> new IllegalArgumentException("post not found"));
         if (postEntity.getStatus() == PostStatus.DELETED) {
             return null;

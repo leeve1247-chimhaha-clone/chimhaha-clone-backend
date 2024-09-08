@@ -26,7 +26,7 @@ public class ViewCountService {
     }
 
     // 주기적으로 DB에 조회수를 반영하는 메소드
-    @Scheduled(fixedRate = 60000) // 1분마다 실행
+    @Scheduled(fixedRate = 1000) // 1초마다 실행
     public void syncViewCountsToDB() {
         Set<String> keys = redisTemplate.keys("post:views:*");
         if (keys != null) {
