@@ -21,6 +21,7 @@ public class PostDetailDto {
     private final Integer postId;
     private final JsonNode content;
     private final List<CommentDto> comments;
+    private final String userAuthId;
 
     public PostDetailDto(Post post){
         this.title = post.getTitle();
@@ -33,5 +34,6 @@ public class PostDetailDto {
         this.postId = post.getId().intValue();
         this.content = post.getJsonContent();
         this.comments = post.getComments().stream().filter(comment -> comment.getParent() == null).map(CommentDto::new).toList();
+        this.userAuthId = post.getUser().getUserAuthId();
     }
 }
