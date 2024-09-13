@@ -76,4 +76,15 @@ public class Post {
         this.status = PostStatus.POSTED;
         this.titleImageFileName = titleImageFileName;
     }
+
+    //신규 생성 (이미지 없음)
+    public Post(String title, JsonNode jsonContent, User user, PostCategory postCategory) {
+        this.title = title;
+        this.jsonContent = jsonContent;
+        this.user = user;
+        this.views = 0;
+        this.likes = 0;
+        this.category = postCategory;
+        this.status = PostStatus.POSTED;
+    }
 }
