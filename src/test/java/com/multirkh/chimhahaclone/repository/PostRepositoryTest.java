@@ -63,8 +63,8 @@ class PostRepositoryTest {
         JsonNode jsonNode2 = jsonNodeOf("{\"ops\": [{\"insert\": \"post sample 2\\n\"}]}");
         PostCategory categoryHobby = postCategoryRepository.findByName("HOBBY");
 
-        Post post1 = postRepository.save(new Post("Test Post 3", jsonNode1, user1, categoryHobby));
-        Post post2 = postRepository.save(new Post("Test Post 4", jsonNode2, user2, categoryHobby));
+        Post post1 = postRepository.save(new Post("Test Post 3", jsonNode1, user1, categoryHobby, ""));
+        Post post2 = postRepository.save(new Post("Test Post 4", jsonNode1, user1, categoryHobby, ""));
 
         commentRepository.save(new Comment(jsonNodeOf("{\"ops\": [{\"insert\": \"comment sample 1\\n\"}]}"), post1, user1, 0));
         commentRepository.save(new Comment(jsonNodeOf("{\"ops\": [{\"insert\": \"comment sample 2\\n\"}]}"), post1, user1, 0));
@@ -84,7 +84,7 @@ class PostRepositoryTest {
         JsonNode jsonContent = jsonNodeOf("{\"ops\": [{\"insert\": \"post sample 3\\n\"}]}");
         ;
         PostCategory categoryHobby = postCategoryRepository.findByName("HOBBY");
-        Post post = postRepository.save(new Post(title, jsonContent, user, categoryHobby));
+        Post post = postRepository.save(new Post(title, jsonContent, user, categoryHobby, ""));
         assertEquals(title, post.getTitle());
     }
 
