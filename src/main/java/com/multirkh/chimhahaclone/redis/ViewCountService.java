@@ -22,11 +22,11 @@ public class ViewCountService {
     // 조회수 증가
     public void incrementViewCount(Long postId) {
         String key = "post:views:" + postId;
-        redisTemplate.opsForValue().increment(key, 1);
+        redisTemplate.opsForValue().increment(key);
     }
 
     // 주기적으로 DB에 조회수를 반영하는 메소드
-    @Scheduled(fixedRate = 1000) // 1초마다 실행
+    @Scheduled(fixedRate = 3000) // 1초마다 실행
     public void syncViewCountsToDB() {
         Set<String> keys = redisTemplate.keys("post:views:*");
         if (keys != null) {
