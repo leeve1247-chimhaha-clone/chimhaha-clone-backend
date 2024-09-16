@@ -5,24 +5,33 @@ import com.multirkh.chimhahaclone.entity.Image;
 import com.multirkh.chimhahaclone.entity.ImageStatus;
 import com.multirkh.chimhahaclone.entity.Post;
 import com.multirkh.chimhahaclone.entity.PostImage;
+import com.multirkh.chimhahaclone.minio.MinioService;
 import com.multirkh.chimhahaclone.repository.ImageRepository;
 import com.multirkh.chimhahaclone.repository.PostImageRepository;
+import io.minio.MinioClient;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@EnableScheduling
 public class ImageService {
 
     private final ImageRepository imageRepository;
     private final PostImageRepository postImageRepository;
+    private final MinioService minioService;
 
-    public ImageService(ImageRepository imageRepository, PostImageRepository postImageRepository) {
+    public ImageService(ImageRepository imageRepository, PostImageRepository postImageRepository, MinioClient minioClient, MinioService minioService) {
         this.imageRepository = imageRepository;
         this.postImageRepository = postImageRepository;
+        this.minioService = minioService;
     }
 
     public Set<String> getImageUrls(JsonNode jsonContent) {
@@ -58,6 +67,7 @@ public class ImageService {
                 postImagesOfImage.remove(postImage);
                 if (postImagesOfImage.isEmpty()) {
                     //minio 이미지 삭제
+                    minioService.deleteImage(image.getFileName());
                     deletedImages.add(image);
                 }
                 deletedPostImages.add(postImage);
@@ -76,5 +86,13 @@ public class ImageService {
             PostImage postImage = new PostImage(post, image, ImageStatus.POSTED);
             postImages.add(postImage);
         }
+    }
+
+    @Scheduled(fixedRate = 1000 * 60 * 15) // 15분마다 실행
+    public void deleteUnusedImages() {
+        Set<Image> imagesEditedBefore = imageRepository.findImagesEditedBefore(ZonedDateTime.now().minusDays(1));
+        if (imagesEditedBefore.isEmpty()) return;
+        minioService.deleteImages(imagesEditedBefore.stream().map(Image::getFileName).collect(Collectors.toSet()));
+        imageRepository.deleteAllByImages(imagesEditedBefore);
     }
 }
