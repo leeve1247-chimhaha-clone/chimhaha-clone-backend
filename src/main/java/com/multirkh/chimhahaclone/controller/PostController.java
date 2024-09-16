@@ -21,6 +21,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -124,13 +125,13 @@ public class PostController {
         }
     }
 
-    @GetMapping("/posts/like")
+    @PostMapping("/posts/like")
     @RolesAllowed("USER")
-    public String likePost(
-            @RequestParam(name = "num", defaultValue = "0") Long listNum
+    public Integer likePost(
+            @RequestBody Map<String, Long> body
     ) {
         String user_auth_id = SecurityContextHolder.getContext().getAuthentication().getName();
-        Post post = postRepository.findById(listNum).orElseThrow(() -> new IllegalArgumentException("post not found"));
+        Post post = postRepository.findById(body.get("num")).orElseThrow(() -> new IllegalArgumentException("post not found"));
         User user = userRepository.findByUserAuthId(user_auth_id);
         PostLikesUser postLikesUser = postLikesUserRepository.findByPostAndUser(post, user);
         if (postLikesUser == null) {
@@ -138,12 +139,21 @@ public class PostController {
             postLikesUser = new PostLikesUser(post, user);
             postLikesUserRepository.save(postLikesUser);
             postRepository.save(post);
-            return "liked";
+            return post.getLikes();
         } else {
-            post.setLikes(post.getLikes() - 1);
-            postLikesUserRepository.delete(postLikesUser);
-            postRepository.save(post);
-            return "like canceled";
+            System.out.println("postLikesUser.getLike() = " + postLikesUser.getLike());
+            System.out.println("postLikesUser.getLike().equals(true) = " + postLikesUser.getLike().equals(true));
+            if (postLikesUser.getLike()) {
+                postLikesUser.setLike(false);
+                post.setLikes(post.getLikes() - 1);
+                postRepository.save(post);
+                return post.getLikes();
+            } else {
+                postLikesUser.setLike(true);
+                post.setLikes(post.getLikes() + 1);
+                postRepository.save(post);
+                return post.getLikes();
+            }
         }
     }
 }
