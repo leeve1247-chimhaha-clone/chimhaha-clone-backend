@@ -57,12 +57,16 @@ public class Post {
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private final List<Comment> comments = new ArrayList<>();
 
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private final List<PostLikesUser> postLikesUsers = new ArrayList<>();
+
     @CreatedDate
     private ZonedDateTime createdDate;
 
     @LastModifiedDate
     private ZonedDateTime editedDate;
 
+    @Setter
     private Integer likes;
 
     //신규 생성
