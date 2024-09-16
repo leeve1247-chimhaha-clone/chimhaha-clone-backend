@@ -32,6 +32,7 @@ public class Comment {
 
     @Type(JsonType.class)
     @Column(columnDefinition = "json")
+    @Setter
     private JsonNode content;
 
     @Setter

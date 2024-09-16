@@ -7,7 +7,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -31,13 +33,11 @@ public class User {
     @OneToMany(mappedBy = "user") // mappedBy: 연관관계의 주인이 아님을 나타냄 (읽기 전용) DB 에선 안보임
     private final List<Comment> comments = new ArrayList<>();
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_like_user_id")
-    private PostLikesUser postLikesUser;
+    @OneToMany(mappedBy = "user")
+    private final Set<PostLikesUser> postLikesUsers = new HashSet<>();
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "comment_like_user_id")
-    private CommentLikesUser commentLikesUser;
+    @OneToMany(mappedBy = "user")
+    private final Set<CommentLikesUser> commentLikesUser = new HashSet<>();
 
     public User(String userAuthId){
         this.userAuthId = userAuthId;
