@@ -95,6 +95,7 @@ public class PostController {
                 throw new IllegalArgumentException("title is null");
             }
             post.setTitle(request.getTitle());
+            imageService.updatePostImage(post, request.getContent());
             post.setJsonContent(request.getContent());
             post.setCategory(postCategoryRepository.findByName(request.getPostCategoryName()));
             post.setTitleImageFileName(request.getTitleImageFileName());
