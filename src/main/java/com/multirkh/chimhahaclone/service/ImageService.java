@@ -32,13 +32,17 @@ public class ImageService {
         return imageUrls;
     }
 
-    public Set<PostImage> createPostImages(Post post, Set<String> imageUrls) {
+    public void createPostImages(Post post, JsonNode jsonContent) {
+        Set<String> imageUrls = getImageUrls(jsonContent);
         Set<PostImage> postImages = new HashSet<>();
+
+        if (imageUrls.isEmpty()) return;
+
         Set<Image> images = imageRepository.findByFileNames(imageUrls);
         for (Image image : images) {
             PostImage postImage = new PostImage(post, image, ImageStatus.POSTED);
             postImages.add(postImage);
         }
-        return postImages;
+        post.getPostImages().addAll(postImages);
     }
 }
