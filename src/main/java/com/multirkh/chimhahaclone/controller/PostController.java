@@ -6,10 +6,12 @@ import com.multirkh.chimhahaclone.dto.PostDetailDto;
 import com.multirkh.chimhahaclone.dto.PostListComponentDto;
 import com.multirkh.chimhahaclone.dto.PostReceived;
 import com.multirkh.chimhahaclone.entity.Post;
+import com.multirkh.chimhahaclone.entity.PostLikesUser;
 import com.multirkh.chimhahaclone.entity.PostStatus;
 import com.multirkh.chimhahaclone.entity.User;
 import com.multirkh.chimhahaclone.redis.ViewCountService;
 import com.multirkh.chimhahaclone.repository.PostCategoryRepository;
+import com.multirkh.chimhahaclone.repository.PostLikesUserRepository;
 import com.multirkh.chimhahaclone.repository.PostRepository;
 import com.multirkh.chimhahaclone.repository.UserRepository;
 import jakarta.annotation.security.RolesAllowed;
@@ -27,6 +29,7 @@ public class PostController {
     private final PostCategoryRepository postCategoryRepository;
     private final UserRepository userRepository;
     private final ViewCountService viewCountService;
+    private final PostLikesUserRepository postLikesUserRepository;
 
     @GetMapping("/")
     public String home() {
@@ -116,4 +119,29 @@ public class PostController {
             throw new IllegalArgumentException("user is not matched");
         }
     }
+
+    @GetMapping("/posts/like")
+    @RolesAllowed("USER")
+    public String likePost(
+            @RequestParam(name = "num", defaultValue = "0") Long listNum
+    ) {
+        String user_auth_id = SecurityContextHolder.getContext().getAuthentication().getName();
+        Post post = postRepository.findById(listNum).orElseThrow(() -> new IllegalArgumentException("post not found"));
+        User user = userRepository.findByUserAuthId(user_auth_id);
+        PostLikesUser postLikesUser = postLikesUserRepository.findByPostAndUser(post, user);
+        if (postLikesUser == null) {
+            post.setLikes(post.getLikes() + 1);
+            postLikesUser = new PostLikesUser(post, user);
+            postLikesUserRepository.save(postLikesUser);
+            postRepository.save(post);
+            return "liked";
+        } else {
+            post.setLikes(post.getLikes() - 1);
+            postLikesUserRepository.delete(postLikesUser);
+            postRepository.save(post);
+            return "like canceled";
+        }
+    }
 }
+
+
