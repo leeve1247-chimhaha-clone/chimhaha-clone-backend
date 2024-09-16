@@ -63,7 +63,7 @@ public class Post {
     private final Set<PostImage> postImages = new HashSet<>();
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    private final List<PostLikesUser> postLikesUsers = new ArrayList<>();
+    private final Set<PostLikesUser> postLikesUsers = new HashSet<>();
 
     @CreatedDate
     private ZonedDateTime createdDate;
