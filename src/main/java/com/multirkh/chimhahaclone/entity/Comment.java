@@ -5,6 +5,7 @@ import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.Type;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -33,15 +34,19 @@ public class Comment {
     @Column(columnDefinition = "json")
     private JsonNode content;
 
+    @Setter
     private Integer likes;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name= "post_id")
+    @JoinColumn(name = "post_id")
     private Post post;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
+    private final List<CommentLikesUser> commentLikesUser = new ArrayList<>();
 
     @CreatedDate
     private ZonedDateTime createdDate;
@@ -55,8 +60,14 @@ public class Comment {
         this.user = user;
         this.likes = likes;
 
-        if (!post.getComments().contains(this)){post.getComments().add(this);};
-        if (!user.getComments().contains(this)){user.getComments().add(this);};
+        if (!post.getComments().contains(this)) {
+            post.getComments().add(this);
+        }
+        ;
+        if (!user.getComments().contains(this)) {
+            user.getComments().add(this);
+        }
+        ;
     }
 
     // 답글
@@ -67,8 +78,17 @@ public class Comment {
         this.likes = likes;
         this.parent = parent;
 
-        if (!post.getComments().contains(this)){post.getComments().add(this);};
-        if (!user.getComments().contains(this)){user.getComments().add(this);};
-        if (!parent.getChildren().contains(this)){parent.getChildren().add(this);};
+        if (!post.getComments().contains(this)) {
+            post.getComments().add(this);
+        }
+        ;
+        if (!user.getComments().contains(this)) {
+            user.getComments().add(this);
+        }
+        ;
+        if (!parent.getChildren().contains(this)) {
+            parent.getChildren().add(this);
+        }
+        ;
     }
 }

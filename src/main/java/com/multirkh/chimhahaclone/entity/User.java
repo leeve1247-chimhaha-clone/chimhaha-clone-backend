@@ -31,6 +31,14 @@ public class User {
     @OneToMany(mappedBy = "user") // mappedBy: 연관관계의 주인이 아님을 나타냄 (읽기 전용) DB 에선 안보임
     private final List<Comment> comments = new ArrayList<>();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_like_user_id")
+    private PostLikesUser postLikesUser;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "comment_like_user_id")
+    private CommentLikesUser commentLikesUser;
+
     public User(String userAuthId){
         this.userAuthId = userAuthId;
     }
