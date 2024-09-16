@@ -9,6 +9,7 @@ import com.multirkh.chimhahaclone.entity.Post;
 import com.multirkh.chimhahaclone.entity.PostLikesUser;
 import com.multirkh.chimhahaclone.entity.PostStatus;
 import com.multirkh.chimhahaclone.entity.User;
+import com.multirkh.chimhahaclone.minio.MinioService;
 import com.multirkh.chimhahaclone.redis.ViewCountService;
 import com.multirkh.chimhahaclone.repository.PostCategoryRepository;
 import com.multirkh.chimhahaclone.repository.PostLikesUserRepository;
@@ -30,6 +31,7 @@ public class PostController {
     private final UserRepository userRepository;
     private final ViewCountService viewCountService;
     private final PostLikesUserRepository postLikesUserRepository;
+    private final MinioService minioService;
 
     @GetMapping("/")
     public String home() {
@@ -75,6 +77,7 @@ public class PostController {
         }
         User user = userRepository.findByUserAuthId(userAuthId);
         Post post = new Post(title, jsonContent, user, postCategory, titleImageFileName);
+        minioService.setImageTagPosted(jsonContent);
         postRepository.save(post);
         return post.getId().toString();
     }
@@ -95,6 +98,7 @@ public class PostController {
             post.setJsonContent(request.getContent());
             post.setCategory(postCategoryRepository.findByName(request.getPostCategoryName()));
             post.setTitleImageFileName(request.getTitleImageFileName());
+            minioService.setImageTagPosted(request.getContent());
             Post savedPost = postRepository.save(post);
             return savedPost.getId().toString();
         } else {
