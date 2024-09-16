@@ -5,7 +5,10 @@ import com.multirkh.chimhahaclone.category.PostCategory;
 import com.multirkh.chimhahaclone.dto.PostDetailDto;
 import com.multirkh.chimhahaclone.dto.PostListComponentDto;
 import com.multirkh.chimhahaclone.dto.PostReceived;
-import com.multirkh.chimhahaclone.entity.*;
+import com.multirkh.chimhahaclone.entity.Post;
+import com.multirkh.chimhahaclone.entity.PostLikesUser;
+import com.multirkh.chimhahaclone.entity.PostStatus;
+import com.multirkh.chimhahaclone.entity.User;
 import com.multirkh.chimhahaclone.redis.ViewCountService;
 import com.multirkh.chimhahaclone.repository.PostCategoryRepository;
 import com.multirkh.chimhahaclone.repository.PostLikesUserRepository;
@@ -18,7 +21,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Set;
 
 @RestController
 @RequiredArgsConstructor
@@ -75,12 +77,8 @@ public class PostController {
         }
         User user = userRepository.findByUserAuthId(userAuthId);
         Post post = new Post(title, jsonContent, user, postCategory, titleImageFileName);
-        Set<String> imageUrls = imageService.getImageUrls(jsonContent);
         postRepository.save(post);
-        if (!imageUrls.isEmpty()) {
-            Set<PostImage> postImages = imageService.createPostImages(post, imageUrls);
-            post.getPostImages().addAll(postImages);
-        }
+        imageService.createPostImages(post, jsonContent);
         return post.getId().toString();
     }
 
