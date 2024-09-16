@@ -26,7 +26,7 @@ public class Image {
         this.fileName = fileName;
     }
 
-    @OneToMany(mappedBy = "image", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "image", cascade = CascadeType.ALL)
     private final Set<PostImage> postImages = new HashSet<>();
 
     @CreatedDate
