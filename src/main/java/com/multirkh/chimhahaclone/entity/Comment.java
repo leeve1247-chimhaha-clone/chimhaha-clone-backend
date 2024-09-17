@@ -46,6 +46,10 @@ public class Comment {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Setter
+    @Enumerated(EnumType.STRING)
+    private PostStatus status;
+
     @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
     private final List<CommentLikesUser> commentLikesUser = new ArrayList<>();
 
@@ -60,6 +64,7 @@ public class Comment {
         this.post = post;
         this.user = user;
         this.likes = likes;
+        this.status = PostStatus.POSTED;
 
         if (!post.getComments().contains(this)) {
             post.getComments().add(this);
@@ -78,6 +83,7 @@ public class Comment {
         this.user = user;
         this.likes = likes;
         this.parent = parent;
+        this.status = PostStatus.POSTED;
 
         if (!post.getComments().contains(this)) {
             post.getComments().add(this);
