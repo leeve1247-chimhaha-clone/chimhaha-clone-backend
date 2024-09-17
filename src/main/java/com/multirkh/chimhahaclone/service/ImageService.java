@@ -8,12 +8,13 @@ import com.multirkh.chimhahaclone.entity.PostImage;
 import com.multirkh.chimhahaclone.minio.MinioService;
 import com.multirkh.chimhahaclone.repository.ImageRepository;
 import com.multirkh.chimhahaclone.repository.PostImageRepository;
-import io.minio.MinioClient;
+import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.InputStream;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -22,17 +23,13 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 @EnableScheduling
+@RequiredArgsConstructor
 public class ImageService {
 
     private final ImageRepository imageRepository;
     private final PostImageRepository postImageRepository;
     private final MinioService minioService;
-
-    public ImageService(ImageRepository imageRepository, PostImageRepository postImageRepository, MinioClient minioClient, MinioService minioService) {
-        this.imageRepository = imageRepository;
-        this.postImageRepository = postImageRepository;
-        this.minioService = minioService;
-    }
+    private final ImageResizerService imageResizerService;
 
     public Set<String> getImageUrls(JsonNode jsonContent) {
         Set<String> imageUrls = new HashSet<>();
@@ -94,5 +91,11 @@ public class ImageService {
         if (imagesEditedBefore.isEmpty()) return;
         minioService.deleteImages(imagesEditedBefore.stream().map(Image::getFileName).collect(Collectors.toSet()));
         imageRepository.deleteAllByImages(imagesEditedBefore);
+    }
+
+    public void createPostImageThumbnail(String titleImageFileName) {
+        InputStream originalInputStream = minioService.getInputStream(titleImageFileName);
+        InputStream thumbNailinputStream = imageResizerService.resizeImage(originalInputStream);
+        minioService.postFileAsThumbnail(thumbNailinputStream, titleImageFileName, "image/png");
     }
 }
