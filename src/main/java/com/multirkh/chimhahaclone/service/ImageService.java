@@ -8,7 +8,8 @@ import com.multirkh.chimhahaclone.entity.PostImage;
 import com.multirkh.chimhahaclone.minio.MinioService;
 import com.multirkh.chimhahaclone.repository.ImageRepository;
 import com.multirkh.chimhahaclone.repository.PostImageRepository;
-import io.minio.MinioClient;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -22,34 +23,34 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 @EnableScheduling
+@RequiredArgsConstructor
+@Slf4j
 public class ImageService {
 
     private final ImageRepository imageRepository;
     private final PostImageRepository postImageRepository;
     private final MinioService minioService;
 
-    public ImageService(ImageRepository imageRepository, PostImageRepository postImageRepository, MinioClient minioClient, MinioService minioService) {
-        this.imageRepository = imageRepository;
-        this.postImageRepository = postImageRepository;
-        this.minioService = minioService;
-    }
-
     public Set<String> getImageUrls(JsonNode jsonContent) {
         Set<String> imageUrls = new HashSet<>();
-        jsonContent.findValues("image").forEach(image -> {
-            imageUrls.add(image.asText().split("preview=true&prefix=")[1]);
-        });
+        jsonContent.findValues("image").forEach(image -> imageUrls.add(image.asText().split("preview=true&prefix=")[1]));
         return imageUrls;
     }
 
-    public void createPostImages(Post post, JsonNode jsonContent) {
+    public void createPostImages(Post post, JsonNode jsonContent, String titleImageFileName) {
         Set<String> imageUrls = getImageUrls(jsonContent);
-        Set<PostImage> postImages = new HashSet<>();
         if (imageUrls.isEmpty()) return;
+
+        Set<PostImage> postImages = new HashSet<>();
         Set<Image> images = imageRepository.findByFileNames(imageUrls);
         for (Image image : images) {
             PostImage postImage = new PostImage(post, image, ImageStatus.POSTED);
             postImages.add(postImage);
+            if (image.getFileName().equals(titleImageFileName)) {
+                postImage.setMainImage(true);
+                // minio 이미지 thumbnail 생성
+                minioService.createThumbnail(post.getId() + "-" + image.getFileName());
+            }
         }
         post.getPostImages().addAll(postImages);
     }
