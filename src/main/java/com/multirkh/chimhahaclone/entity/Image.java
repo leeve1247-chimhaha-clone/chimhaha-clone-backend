@@ -22,8 +22,11 @@ public class Image {
 
     private String fileName;
 
-    public Image(String fileName, ImageStatus status) {
+    private String contentType;
+
+    public Image(String fileName, String contentType) {
         this.fileName = fileName;
+        this.contentType = contentType;
     }
 
     @OneToMany(mappedBy = "image", cascade = CascadeType.ALL)
