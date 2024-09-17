@@ -8,6 +8,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Configuration
 @Slf4j
 public class MinioConfig {
@@ -22,6 +25,8 @@ public class MinioConfig {
 
     @Value("${minio.bucket-name}")
     private String minioBucketName;
+    @Value("${minio.thumbnail-bucket-name}")
+    private String thumbnailBucketName;
 
     @Bean
     public MinioClient minioClient() {
@@ -31,12 +36,15 @@ public class MinioConfig {
                             .endpoint(minioUrl)
                             .credentials(minioAccessKey, minioSecretKey)
                             .build();
-            boolean found =
-                    minioClient.bucketExists(BucketExistsArgs.builder().bucket(minioBucketName).build());
-            if (!found) {
-                minioClient.makeBucket(MakeBucketArgs.builder().bucket(minioBucketName).build());
-            } else {
-                log.info("Bucket '{}' already exists.", minioBucketName);
+            Map<String, Boolean> founds = new HashMap<>();
+            founds.put(minioBucketName, minioClient.bucketExists(BucketExistsArgs.builder().bucket(minioBucketName).build()));
+            founds.put(thumbnailBucketName, minioClient.bucketExists(BucketExistsArgs.builder().bucket(thumbnailBucketName).build()));
+            for(Map.Entry<String, Boolean> entry : founds.entrySet()) {
+                if (!entry.getValue()) {
+                    minioClient.makeBucket(MakeBucketArgs.builder().bucket(entry.getKey()).build());
+                } else {
+                    log.info("Bucket '{}' already exists.", entry.getKey());
+                }
             }
             return minioClient;
         } catch (Exception e) {

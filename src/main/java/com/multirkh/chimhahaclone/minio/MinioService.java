@@ -10,6 +10,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -22,6 +25,8 @@ public class MinioService {
     private String minioExportUrl;
     @Value("${minio.bucket-name}")
     private String minioBucketName;
+    @Value("${minio.thumbnail-bucket-name}")
+    private String thumbnailBucketName;
 
     private final MinioClient minioClient;
 
@@ -51,7 +56,7 @@ public class MinioService {
         for (String fileName : fileNames) {
             objects.add(new DeleteObject(fileName));
         }
-        try{
+        try {
             Iterable<Result<DeleteError>> results =
                     minioClient.removeObjects(
                             RemoveObjectsArgs.builder().bucket("my-bucketname").objects(objects).build());
@@ -71,6 +76,37 @@ public class MinioService {
                     RemoveObjectArgs.builder()
                             .bucket(minioBucketName)
                             .object(fileName)
+                            .build());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public InputStream getImage(String fileName) {
+        try {
+            return minioClient.getObject(
+                    GetObjectArgs.builder()
+                            .bucket(minioBucketName)
+                            .object(fileName)
+                            .build());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void createThumbnail(String postIdAndFileName) {
+        try {
+            InputStream inputStream = getImage(postIdAndFileName.split("-")[1]);
+            minioClient.copyObject(
+                    CopyObjectArgs.builder()
+                            .bucket(thumbnailBucketName)
+                            .object(postIdAndFileName)
+                            .source(
+                                    CopySource.builder()
+                                            .bucket(minioBucketName)
+                                            .object(postIdAndFileName.split("-")[1])
+                                            .build()
+                            )
                             .build());
         } catch (Exception e) {
             throw new RuntimeException(e);
