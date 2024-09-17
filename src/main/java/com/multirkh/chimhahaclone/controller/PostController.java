@@ -80,6 +80,7 @@ public class PostController {
         Post post = new Post(title, jsonContent, user, postCategory, titleImageFileName);
         postRepository.save(post);
         imageService.createPostImages(post, jsonContent);
+        imageService.createPostImageThumbnail(request.getTitleImageFileName());
         return post.getId().toString();
     }
 

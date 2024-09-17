@@ -1,7 +1,6 @@
 package com.multirkh.chimhahaclone.controller;
 
 import com.multirkh.chimhahaclone.entity.Image;
-import com.multirkh.chimhahaclone.entity.ImageStatus;
 import com.multirkh.chimhahaclone.minio.MinioService;
 import com.multirkh.chimhahaclone.repository.ImageRepository;
 import jakarta.annotation.security.RolesAllowed;
@@ -23,7 +22,7 @@ public class ImageController {
         // save into minio
         String randomImageName = minioService.postFileWithRandomFileName(file);
         // save into db
-        imageRepository.save(new Image(randomImageName, ImageStatus.TEMPORARY));
+        imageRepository.save(new Image(randomImageName, file.getContentType()));
         return minioService.getPreviewUrl(randomImageName);
     }
 }
