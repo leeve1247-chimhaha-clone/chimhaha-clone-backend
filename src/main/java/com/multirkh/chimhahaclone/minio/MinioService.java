@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -23,8 +22,6 @@ public class MinioService {
     private String minioExportUrl;
     @Value("${minio.bucket-name}")
     private String minioBucketName;
-    @Value("${minio.thumbnail-bucket}")
-    private String minioThumbNailBucket;
 
     private final MinioClient minioClient;
 
@@ -44,25 +41,12 @@ public class MinioService {
         return randomImageFileName;
     }
 
-    public void postFileAsThumbnail(@NotNull InputStream inputStream, @NotNull String fileName, @NotNull String contentType) {
-        try{
-            minioClient.putObject(
-                    PutObjectArgs.builder().bucket(minioThumbNailBucket).object(
-                                    fileName
-                            ).stream(inputStream, -1, -1)
-                            .contentType(contentType)
-                            .build());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     // randomImageFileName : "파일이름 명.확장자" ex : "this_is_random_string_20.png"
     public String getPreviewUrl(String randomImageFileName) {
         return minioExportUrl + "/api/v1/buckets/" + minioBucketName + "/objects/download?preview=true&prefix=" + randomImageFileName;
     }
 
-    public void deleteImages(@NotNull Set<String> fileNames) {
+    public void deleteImages(Set<String> fileNames) {
         List<DeleteObject> objects = new LinkedList<>();
         for (String fileName : fileNames) {
             objects.add(new DeleteObject(fileName));
@@ -76,18 +60,6 @@ public class MinioService {
                 System.out.println(
                         "Error in deleting object " + error.objectName() + "; " + error.message());
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public InputStream getInputStream(String fileName) {
-        try {
-            return minioClient.getObject(
-                    GetObjectArgs.builder()
-                            .bucket(minioBucketName)
-                            .object(fileName)
-                            .build());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -43,7 +43,6 @@ dependencies {
     testAnnotationProcessor 'org.projectlombok:lombok'
     implementation group: 'io.minio', name: 'minio', version: '8.5.12'
 
-    implementation 'net.coobird:thumbnailator:0.4.20'
 }
 
 dependencyManagement {
