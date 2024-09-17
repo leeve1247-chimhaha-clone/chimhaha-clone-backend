@@ -58,15 +58,15 @@ class PostRepositoryTest {
 
     @BeforeEach
     void insertData() {
-        imageRepository.save(new Image("1.png", "image/png"));
-        imageRepository.save(new Image("1.png", "image/png"));
-        imageRepository.save(new Image("1.png", "image/png"));
-        imageRepository.save(new Image("1.png", "image/png"));
-        imageRepository.save(new Image("1.png", "image/png"));
-        imageRepository.save(new Image("1.png", "image/png"));
+        imageRepository.save(new Image("1.png", ImageStatus.POSTED));
+        imageRepository.save(new Image("2.png", ImageStatus.POSTED));
+        imageRepository.save(new Image("3.png", ImageStatus.POSTED));
+        imageRepository.save(new Image("4.png", ImageStatus.POSTED));
+        imageRepository.save(new Image("5.png", ImageStatus.POSTED));
+        imageRepository.save(new Image("6.png", ImageStatus.POSTED));
 
-        imageRepository.save(new Image("1.png", "image/png"));
-        imageRepository.save(new Image("1.png", "image/png"));
+        imageRepository.save(new Image("7.png", ImageStatus.POSTED));
+        imageRepository.save(new Image("8.png", ImageStatus.POSTED));
 
 
         User user1 = userRepository.save(new User("aaron", "aaaa"));
