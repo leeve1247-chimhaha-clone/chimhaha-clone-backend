@@ -23,7 +23,7 @@ public class ImageController {
         // save into minio
         String randomImageName = minioService.postFileWithRandomFileName(file);
         // save into db
-        imageRepository.save(new Image(randomImageName, ImageStatus.TEMPORARY));
+        imageRepository.save(new Image(randomImageName, file.getContentType()));
         return minioService.getPreviewUrl(randomImageName);
     }
 }
