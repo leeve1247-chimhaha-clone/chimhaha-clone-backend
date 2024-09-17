@@ -23,11 +23,15 @@ public class PostImage {
     @Enumerated(EnumType.STRING)
     private ImageStatus status;
 
+    @Setter
+    private boolean mainImage;
+
     // 신규 생성
     public PostImage(Post post, Image image, ImageStatus status) {
         this.post = post;
         this.image = image;
         this.status = status;
+        this.mainImage = false;
         post.getPostImages().add(this);
         image.getPostImages().add(this);
     }

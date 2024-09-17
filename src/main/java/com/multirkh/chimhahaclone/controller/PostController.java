@@ -79,7 +79,7 @@ public class PostController {
         User user = userRepository.findByUserAuthId(userAuthId);
         Post post = new Post(title, jsonContent, user, postCategory, titleImageFileName);
         postRepository.save(post);
-        imageService.createPostImages(post, jsonContent);
+        imageService.createPostImages(post, jsonContent, titleImageFileName);
         return post.getId().toString();
     }
 
