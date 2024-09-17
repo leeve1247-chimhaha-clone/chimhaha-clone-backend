@@ -53,6 +53,9 @@ public class Post {
     private String titleImageFileName;
 
     @Setter
+    private Integer commentsCount;
+
+    @Setter
     @Enumerated(EnumType.STRING)
     private PostStatus status;
 
@@ -84,6 +87,7 @@ public class Post {
         this.category = postCategory;
         this.status = PostStatus.POSTED;
         this.titleImageFileName = titleImageFileName;
+        this.commentsCount = 0;
     }
 
     //신규 생성 (이미지 없음)
@@ -95,5 +99,6 @@ public class Post {
         this.likes = 0;
         this.category = postCategory;
         this.status = PostStatus.POSTED;
+        this.commentsCount = 0;
     }
 }
