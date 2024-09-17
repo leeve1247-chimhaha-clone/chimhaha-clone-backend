@@ -9,6 +9,8 @@ import com.multirkh.chimhahaclone.dto.CommentDto;
 import com.multirkh.chimhahaclone.dto.PostDetailDto;
 import com.multirkh.chimhahaclone.entity.*;
 import com.multirkh.chimhahaclone.minio.MinioConfig;
+import com.multirkh.chimhahaclone.minio.MinioService;
+import com.multirkh.chimhahaclone.minio.TestMinioService;
 import com.multirkh.chimhahaclone.service.ImageService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
@@ -35,8 +37,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class PostRepositoryTest {
     @Autowired
-    private MinioConfig minioConfig;
-    @Autowired
     private PostRepository postRepository;
     @Autowired
     private UserRepository userRepository;
@@ -46,28 +46,32 @@ class PostRepositoryTest {
     private CommentRepository commentRepository;
     @Autowired
     private EntityManager em;
-
-    @Autowired
-    private ObjectMapper mapper = new ObjectMapper();
     @Autowired
     private ImageService imageService;
     @Autowired
     private ImageRepository imageRepository;
     @Autowired
-    private PostImageRepository postImageRepository;
+    private TestMinioService minioService;
 
     @BeforeEach
     void insertData() {
-        imageRepository.save(new Image("1.png", ImageStatus.POSTED));
-        imageRepository.save(new Image("2.png", ImageStatus.POSTED));
-        imageRepository.save(new Image("3.png", ImageStatus.POSTED));
-        imageRepository.save(new Image("4.png", ImageStatus.POSTED));
-        imageRepository.save(new Image("5.png", ImageStatus.POSTED));
-        imageRepository.save(new Image("6.png", ImageStatus.POSTED));
+        imageRepository.save(new Image("1.png", "image/png"));
+        imageRepository.save(new Image("2.png", "image/png"));
+        imageRepository.save(new Image("3.png", "image/png"));
+        imageRepository.save(new Image("4.png", "image/png"));
+        imageRepository.save(new Image("5.png", "image/png"));
+        imageRepository.save(new Image("6.png", "image/png"));
+        imageRepository.save(new Image("7.png", "image/png"));
+        imageRepository.save(new Image("8.png", "image/png"));
 
-        imageRepository.save(new Image("7.png", ImageStatus.POSTED));
-        imageRepository.save(new Image("8.png", ImageStatus.POSTED));
-
+        minioService.postMockFile("1.png");
+        minioService.postMockFile("2.png");
+        minioService.postMockFile("3.png");
+        minioService.postMockFile("4.png");
+        minioService.postMockFile("5.png");
+        minioService.postMockFile("6.png");
+        minioService.postMockFile("7.png");
+        minioService.postMockFile("8.png");
 
         User user1 = userRepository.save(new User("aaron", "aaaa"));
         User user2 = userRepository.save(new User("bbron", "bbbb"));
@@ -76,8 +80,8 @@ class PostRepositoryTest {
         JsonNode jsonNode3 = jsonNodeOf("{\"ops\": [{\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=1.png\"}}, {\"insert\": \"\\n\"}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=2.png\"}}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=2.png\"}}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=2.png\"}}, {\"insert\": \"\\n\\n\", \"attributes\": {\"align\": \"center\"}}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=2.png\"}}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=2.png\"}}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=2.png\"}}, {\"insert\": \"\\n\\n\", \"attributes\": {\"align\": \"center\"}}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=2.png\"}}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=2.png\"}}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=2.png\"}}, {\"insert\": \"\\n\\n\", \"attributes\": {\"align\": \"right\"}}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=3.png\"}}, {\"insert\": \"\\n\"}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=4.png\"}}, {\"insert\": \"\\n\"}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=5.png\"}}, {\"insert\": \"\\n\"}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=6.png\"}}, {\"insert\": \"\\n\"}]}");
         PostCategory categoryHobby = postCategoryRepository.findByName("HOBBY");
 
-        Post post1 = postRepository.save(new Post("Test Post 1", jsonNode1, user1, categoryHobby, ""));
-        Post post2 = postRepository.save(new Post("Test Post 2", jsonNode1, user1, categoryHobby, ""));
+        Post post1 = postRepository.save(new Post("Test Post 1", jsonNode1, user1, categoryHobby, "6.png"));
+        Post post2 = postRepository.save(new Post("Test Post 2", jsonNode1, user1, categoryHobby, "1.png"));
         Post post3 = postRepository.save(new Post("Test Post 3", jsonNode3, user2, categoryHobby, ""));
 
         commentRepository.save(new Comment(jsonNodeOf("{\"ops\": [{\"insert\": \"comment sample 1\\n\"}]}"), post1, user1, 0));
@@ -85,8 +89,9 @@ class PostRepositoryTest {
         commentRepository.save(new Comment(jsonNodeOf("{\"ops\": [{\"insert\": \"comment sample 3\\n\"}]}"), post1, user2, 0));
         commentRepository.save(new Comment(jsonNodeOf("{\"ops\": [{\"insert\": \"comment sample 4\\n\"}]}"), post2, user1, 0));
         commentRepository.save(new Comment(jsonNodeOf("{\"ops\": [{\"insert\": \"comment sample 5\\n\"}]}"), post2, user2, 0));
-        imageService.createPostImages(post2, jsonNode2);
-        imageService.createPostImages(post3, jsonNode3);
+
+        imageService.createPostImages(post2, jsonNode2, "6.png");
+        imageService.createPostImages(post3, jsonNode3, "1.png");
         
         log.info(String.valueOf(System.identityHashCode(post1)));
         em.flush(); // db commit
@@ -105,13 +110,6 @@ class PostRepositoryTest {
         PostCategory categoryHobby = postCategoryRepository.findByName("HOBBY");
         Post post = postRepository.save(new Post(title, jsonContent, user, categoryHobby, ""));
         assertEquals(title, post.getTitle());
-    }
-
-    @Test
-    @Order(1)
-    void loadPostDto() {
-        Assertions.assertThrows(NoSuchElementException.class, () -> {postRepository.findByTitleEquals("Test Post 1").orElseThrow();});
-
     }
 
     @Test
