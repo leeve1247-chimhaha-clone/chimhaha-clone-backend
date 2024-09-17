@@ -2,10 +2,7 @@ package com.multirkh.chimhahaclone.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.multirkh.chimhahaclone.dto.CommentDto;
-import com.multirkh.chimhahaclone.entity.Comment;
-import com.multirkh.chimhahaclone.entity.CommentLikesUser;
-import com.multirkh.chimhahaclone.entity.Post;
-import com.multirkh.chimhahaclone.entity.User;
+import com.multirkh.chimhahaclone.entity.*;
 import com.multirkh.chimhahaclone.repository.*;
 import jakarta.annotation.security.RolesAllowed;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +38,7 @@ public class CommentController {
 
         if (comment.getUser().getId().equals(user.getId())) {
             comment.setContent(request.getContent());
+            comment.setStatus(PostStatus.EDITED);
             commentRepository.save(comment);
             return new CommentDto(comment);
         } else {
@@ -58,6 +56,7 @@ public class CommentController {
         Comment comment = commentRepository.findById(request.getCommentId()).orElseThrow();
         if (comment.getUser().getId().equals(user.getId())) {
             comment.setContent(jsonNodeOf("{\"ops\": [{\"insert\": \"삭제된 댓글입니다\\n\"}]}"));
+            comment.setStatus(PostStatus.DELETED);
             commentRepository.save(comment);
             return new CommentDto(comment);
         } else {
@@ -92,7 +91,7 @@ public class CommentController {
             @RequestBody Map<String, Long> body
     ) {
         String user_auth_id = SecurityContextHolder.getContext().getAuthentication().getName();
-        Comment comment = commentRepository.findById(body.get("num")).orElseThrow(() -> new IllegalArgumentException("post not found"));
+        Comment comment = commentRepository.findById(body.get("commentId")).orElseThrow(() -> new IllegalArgumentException("post not found"));
         User user = userRepository.findByUserAuthId(user_auth_id);
         CommentLikesUser commentLikesUser = commentLikesUserRepository.findByCommentAndUser(comment, user);
         if (commentLikesUser == null) {
