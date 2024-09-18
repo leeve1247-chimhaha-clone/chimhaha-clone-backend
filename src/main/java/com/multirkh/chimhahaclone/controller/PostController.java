@@ -116,6 +116,7 @@ public class PostController {
         Post post = postRepository.findById(Long.valueOf(request.getPostId())).orElseThrow(() -> new IllegalArgumentException("post not found"));
 
         if (post.getUser().getUserAuthId().equals(user_auth_id)) {
+            imageService.deletePostImage(post);
             post.setJsonContent(null);
             post.setStatus(PostStatus.DELETED);
             Post savedPost = postRepository.save(post);
