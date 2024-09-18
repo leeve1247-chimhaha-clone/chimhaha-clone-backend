@@ -1,5 +1,6 @@
 package com.multirkh.chimhahaclone.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,5 +10,6 @@ import lombok.Setter;
 public class CommentReceived {
     private JsonNode content;
     private Long postId;
-    private Long commentId;
+    @JsonProperty("commentId")
+    private Long parentCommentId;
 }
