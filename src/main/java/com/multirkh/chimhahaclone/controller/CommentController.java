@@ -59,7 +59,7 @@ public class CommentController {
             comment.setContent(jsonNodeOf("{\"ops\": [{\"insert\": \"삭제된 댓글입니다\\n\"}]}"));
             comment.setStatus(PostStatus.DELETED);
             commentRepository.save(comment);
-            postService.decreaseComment(comment.getPost());
+            postService.decreaseCommentCount(comment.getPost());
             return new CommentDto(comment);
         } else {
             throw new IllegalArgumentException("You are not the owner of this comment");
@@ -84,7 +84,7 @@ public class CommentController {
             comment = new Comment(jsonContent, post, user, 0, parent);
         }
         commentRepository.save(comment);
-        postService.increaseComment(comment.getPost());
+        postService.increaseCommentCount(comment.getPost());
         return new CommentDto(comment);
     }
 
