@@ -2,7 +2,7 @@
 package com.multirkh.chimhahaclone.dto;
 
 import com.multirkh.chimhahaclone.entity.Post;
-import com.multirkh.chimhahaclone.entity.PostStatus;
+import com.multirkh.chimhahaclone.entity.enums.PostStatus;
 import lombok.Getter;
 
 import java.time.ZonedDateTime;

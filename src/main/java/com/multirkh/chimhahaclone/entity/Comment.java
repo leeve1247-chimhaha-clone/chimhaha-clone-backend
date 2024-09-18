@@ -1,6 +1,7 @@
 package com.multirkh.chimhahaclone.entity;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.multirkh.chimhahaclone.entity.enums.PostStatus;
 import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -9,6 +10,8 @@ import lombok.Setter;
 import org.hibernate.annotations.Type;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -18,6 +21,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @Table(name = "comments")
+@EntityListeners(AuditingEntityListener.class)
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,4 +1,4 @@
-package com.multirkh.chimhahaclone.entity;
+package com.multirkh.chimhahaclone.entity.enums;
 
 public enum ImageStatus {
     POSTED,

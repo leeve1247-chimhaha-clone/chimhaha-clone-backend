@@ -3,6 +3,7 @@ package com.multirkh.chimhahaclone.service.comment;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.multirkh.chimhahaclone.dto.CommentReceived;
 import com.multirkh.chimhahaclone.entity.*;
+import com.multirkh.chimhahaclone.entity.enums.PostStatus;
 import com.multirkh.chimhahaclone.repository.CommentLikesUserRepository;
 import com.multirkh.chimhahaclone.repository.CommentRepository;
 import com.multirkh.chimhahaclone.repository.PostRepository;
@@ -12,7 +13,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
-import java.util.Optional;
 
 import static com.multirkh.chimhahaclone.util.UtilStringJsonConverter.jsonNodeOf;
 
