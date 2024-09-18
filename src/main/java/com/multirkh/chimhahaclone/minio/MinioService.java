@@ -1,5 +1,7 @@
 package com.multirkh.chimhahaclone.minio;
 
+import com.multirkh.chimhahaclone.service.image.resize.ImageResizerService;
+import com.multirkh.chimhahaclone.service.image.resize.InputStreamAndLength;
 import com.multirkh.chimhahaclone.util.IdGenerator;
 import io.minio.*;
 import io.minio.messages.DeleteError;
@@ -10,8 +12,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
@@ -21,6 +21,7 @@ import java.util.Set;
 @Service
 @RequiredArgsConstructor
 public class MinioService {
+    private final ImageResizerService imageResizerService;
     @Value("${minio.export-url}")
     private String minioExportUrl;
     @Value("${minio.bucket-name}")
@@ -94,22 +95,20 @@ public class MinioService {
         }
     }
 
-    public void createThumbnail(String postIdAndFileName) {
+    public void createThumbnail(String postIdAndFileName, String contentType) {
         try {
             InputStream inputStream = getImage(postIdAndFileName.split("-")[1]);
-            minioClient.copyObject(
-                    CopyObjectArgs.builder()
+            InputStreamAndLength isL = imageResizerService.resizeImage(inputStream, contentType);
+            minioClient.putObject(
+                    PutObjectArgs.builder()
                             .bucket(thumbnailBucketName)
                             .object(postIdAndFileName)
-                            .source(
-                                    CopySource.builder()
-                                            .bucket(minioBucketName)
-                                            .object(postIdAndFileName.split("-")[1])
-                                            .build()
-                            )
+                            .stream(isL.getInputStream(), isL.getSize(), -1)
                             .build());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 }
+
+
