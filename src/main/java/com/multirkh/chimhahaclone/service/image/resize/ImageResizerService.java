@@ -28,10 +28,7 @@ public class ImageResizerService {
                     .size(croppedSize[0], croppedSize[1])
                     .crop(Positions.CENTER)
                     .toOutputStream(os);
-            InputStreamAndLength inputStreamAndLength = new InputStreamAndLength();
-            inputStreamAndLength.setSize(os.toByteArray().length);
-            inputStreamAndLength.setInputStream(new ByteArrayInputStream(os.toByteArray()));
-            return inputStreamAndLength;
+            return new InputStreamAndLength(os.toByteArray().length, new ByteArrayInputStream(os.toByteArray()));
         } catch (IOException e) {
             throw new RuntimeException("Error resizing image", e);
         }
