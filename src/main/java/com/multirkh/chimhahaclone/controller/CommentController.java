@@ -2,9 +2,10 @@ package com.multirkh.chimhahaclone.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.multirkh.chimhahaclone.dto.CommentDto;
+import com.multirkh.chimhahaclone.dto.CommentReceived;
 import com.multirkh.chimhahaclone.entity.*;
 import com.multirkh.chimhahaclone.repository.*;
-import com.multirkh.chimhahaclone.service.PostService;
+import com.multirkh.chimhahaclone.service.post.PostService;
 import jakarta.annotation.security.RolesAllowed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

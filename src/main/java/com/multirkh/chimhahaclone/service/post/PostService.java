@@ -1,4 +1,4 @@
-package com.multirkh.chimhahaclone.service;
+package com.multirkh.chimhahaclone.service.post;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.multirkh.chimhahaclone.category.PostCategory;

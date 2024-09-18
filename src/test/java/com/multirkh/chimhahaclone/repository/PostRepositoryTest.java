@@ -8,7 +8,7 @@ import com.multirkh.chimhahaclone.dto.CommentDto;
 import com.multirkh.chimhahaclone.dto.PostDetailDto;
 import com.multirkh.chimhahaclone.entity.*;
 import com.multirkh.chimhahaclone.minio.MockFileToMinioService;
-import com.multirkh.chimhahaclone.service.ImageService;
+import com.multirkh.chimhahaclone.service.image.ImageService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
