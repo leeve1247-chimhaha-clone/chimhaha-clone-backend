@@ -2,6 +2,7 @@ package com.multirkh.chimhahaclone.entity;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.multirkh.chimhahaclone.category.PostCategory;
+import com.multirkh.chimhahaclone.entity.enums.PostStatus;
 import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
 import lombok.Getter;

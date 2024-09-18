@@ -7,7 +7,7 @@ import com.multirkh.chimhahaclone.dto.PostListComponentDto;
 import com.multirkh.chimhahaclone.dto.PostReceived;
 import com.multirkh.chimhahaclone.entity.Post;
 import com.multirkh.chimhahaclone.entity.PostLikesUser;
-import com.multirkh.chimhahaclone.entity.PostStatus;
+import com.multirkh.chimhahaclone.entity.enums.PostStatus;
 import com.multirkh.chimhahaclone.entity.User;
 import com.multirkh.chimhahaclone.exception.FindDeletedPostException;
 import com.multirkh.chimhahaclone.repository.*;

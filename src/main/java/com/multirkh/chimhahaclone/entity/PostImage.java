@@ -1,5 +1,6 @@
 package com.multirkh.chimhahaclone.entity;
 
+import com.multirkh.chimhahaclone.entity.enums.ImageStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

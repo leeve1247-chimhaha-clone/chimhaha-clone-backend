@@ -2,7 +2,7 @@ package com.multirkh.chimhahaclone.service.image;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.multirkh.chimhahaclone.entity.Image;
-import com.multirkh.chimhahaclone.entity.ImageStatus;
+import com.multirkh.chimhahaclone.entity.enums.ImageStatus;
 import com.multirkh.chimhahaclone.entity.Post;
 import com.multirkh.chimhahaclone.entity.PostImage;
 import com.multirkh.chimhahaclone.minio.MinioService;
