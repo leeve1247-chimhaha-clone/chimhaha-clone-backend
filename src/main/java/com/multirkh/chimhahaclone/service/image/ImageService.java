@@ -14,10 +14,12 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -129,5 +131,16 @@ public class ImageService {
         if (imagesEditedBefore.isEmpty()) return;
         minioService.deleteImages(imagesEditedBefore.stream().map(Image::getFileName).collect(Collectors.toSet()));
         imageRepository.deleteAllByImages(imagesEditedBefore);
+    }
+
+    public void validateImage(MultipartFile file) {
+        if (file.isEmpty()) throw new IllegalArgumentException("file is empty");
+        if (!Objects.requireNonNull(file.getContentType()).startsWith("image/")) throw new IllegalArgumentException("file is not image");
+    }
+
+    public String createImage(MultipartFile file) {
+        String randomImageName = minioService.postFileWithRandomFileName(file);
+        imageRepository.save(new Image(randomImageName, file.getContentType()));
+        return minioService.getPreviewUrl(randomImageName);
     }
 }
