@@ -1,16 +1,13 @@
 package com.multirkh.chimhahaclone.repository;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.multirkh.chimhahaclone.bootup.DataInitializer;
 import com.multirkh.chimhahaclone.category.PostCategory;
 import com.multirkh.chimhahaclone.config.JwtDecoderTestConfig;
 import com.multirkh.chimhahaclone.dto.CommentDto;
 import com.multirkh.chimhahaclone.dto.PostDetailDto;
 import com.multirkh.chimhahaclone.entity.*;
-import com.multirkh.chimhahaclone.minio.MinioConfig;
-import com.multirkh.chimhahaclone.minio.MinioService;
-import com.multirkh.chimhahaclone.minio.TestMinioService;
+import com.multirkh.chimhahaclone.minio.MockFileToMinioService;
 import com.multirkh.chimhahaclone.service.ImageService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
@@ -23,7 +20,6 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Set;
 
 import static com.multirkh.chimhahaclone.util.UtilStringJsonConverter.jsonNodeOf;
@@ -51,7 +47,7 @@ class PostRepositoryTest {
     @Autowired
     private ImageRepository imageRepository;
     @Autowired
-    private TestMinioService minioService;
+    private MockFileToMinioService minioService;
 
     @BeforeEach
     void insertData() {
