@@ -38,6 +38,8 @@ dependencies {
     testRuntimeOnly 'com.mysql:mysql-connector-j'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
+    implementation 'net.coobird:thumbnailator:0.4.20'
+
     implementation group: 'com.github.mwiede', name: 'jsch', version: '0.2.18'
     testCompileOnly'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
