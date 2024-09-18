@@ -109,6 +109,18 @@ public class MinioService {
             throw new RuntimeException(e);
         }
     }
+
+    public void deleteThumbnail(String postIdAndFileName) {
+        try{
+            minioClient.removeObject(
+                    RemoveObjectArgs.builder()
+                            .bucket(thumbnailBucketName)
+                            .object(postIdAndFileName)
+                            .build());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
 
 
