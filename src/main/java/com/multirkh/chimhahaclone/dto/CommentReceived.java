@@ -1,4 +1,4 @@
-package com.multirkh.chimhahaclone.controller;
+package com.multirkh.chimhahaclone.dto;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Getter;
