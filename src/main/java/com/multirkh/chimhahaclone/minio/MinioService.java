@@ -103,7 +103,7 @@ public class MinioService {
                     PutObjectArgs.builder()
                             .bucket(thumbnailBucketName)
                             .object(postIdAndFileName)
-                            .stream(isL.getInputStream(), isL.getSize(), -1)
+                            .stream(isL.inputStream(), isL.size(), -1)
                             .build());
         } catch (Exception e) {
             throw new RuntimeException(e);
