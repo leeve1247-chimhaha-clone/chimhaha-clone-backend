@@ -76,9 +76,9 @@ class PostRepositoryTest {
         JsonNode jsonNode3 = jsonNodeOf("{\"ops\": [{\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=1.png\"}}, {\"insert\": \"\\n\"}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=2.png\"}}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=2.png\"}}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=2.png\"}}, {\"insert\": \"\\n\\n\", \"attributes\": {\"align\": \"center\"}}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=2.png\"}}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=2.png\"}}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=2.png\"}}, {\"insert\": \"\\n\\n\", \"attributes\": {\"align\": \"center\"}}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=2.png\"}}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=2.png\"}}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=2.png\"}}, {\"insert\": \"\\n\\n\", \"attributes\": {\"align\": \"right\"}}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=3.png\"}}, {\"insert\": \"\\n\"}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=4.png\"}}, {\"insert\": \"\\n\"}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=5.png\"}}, {\"insert\": \"\\n\"}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=6.png\"}}, {\"insert\": \"\\n\"}]}");
         PostCategory categoryHobby = postCategoryRepository.findByName("HOBBY");
 
-        Post post1 = postRepository.save(new Post("Test Post 1", jsonNode1, user1, categoryHobby, "6.png"));
-        Post post2 = postRepository.save(new Post("Test Post 2", jsonNode1, user1, categoryHobby, "1.png"));
-        Post post3 = postRepository.save(new Post("Test Post 3", jsonNode3, user2, categoryHobby, ""));
+        Post post1 = postRepository.save(new Post("Test Post 1", jsonNode1, user1, categoryHobby, null));
+        Post post2 = postRepository.save(new Post("Test Post 2", jsonNode2, user1, categoryHobby, "6.png"));
+        Post post3 = postRepository.save(new Post("Test Post 3", jsonNode3, user2, categoryHobby, "1.png"));
 
         commentRepository.save(new Comment(jsonNodeOf("{\"ops\": [{\"insert\": \"comment sample 1\\n\"}]}"), post1, user1, 0));
         commentRepository.save(new Comment(jsonNodeOf("{\"ops\": [{\"insert\": \"comment sample 2\\n\"}]}"), post1, user1, 0));
@@ -166,7 +166,8 @@ class PostRepositoryTest {
     public void updateImages(){
         JsonNode jsonNode = jsonNodeOf("{\"ops\": [{\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=7.png\"}},{\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=8.png\"}}, {\"insert\": \"\\n\"}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=4.png\"}}]}");
         Post post = postRepository.findByTitleEquals("Test Post 3").orElseThrow(() -> new EntityNotFoundException("Post not found"));
-        imageService.updatePostImage(post,jsonNode);
+
+        imageService.updatePostImage(post,jsonNode,"7.png");
         post.setJsonContent(jsonNode);
         Set<PostImage> postImages = post.getPostImages();
         for (PostImage postImage : postImages){
