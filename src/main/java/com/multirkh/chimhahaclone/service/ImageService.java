@@ -49,7 +49,7 @@ public class ImageService {
             if (image.getFileName().equals(titleImageFileName)) {
                 postImage.setMainImage(true);
                 // minio 이미지 thumbnail 생성
-                minioService.createThumbnail(post.getId() + "-" + image.getFileName());
+                minioService.createThumbnail(post.getId() + "-" + image.getFileName(), image.getContentType());
             }
         }
         post.getPostImages().addAll(postImages);
