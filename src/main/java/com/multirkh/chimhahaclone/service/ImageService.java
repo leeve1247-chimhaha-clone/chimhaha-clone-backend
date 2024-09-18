@@ -15,6 +15,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -37,7 +38,7 @@ public class ImageService {
         return imageUrls;
     }
 
-    public void createPostImages(Post post, JsonNode jsonContent, String titleImageFileName) {
+    public void createPostImages(Post post, JsonNode jsonContent, @Nullable String titleImageFileName) {
         Set<String> imageUrls = getImageUrls(jsonContent);
         if (imageUrls.isEmpty()) return;
 
@@ -55,9 +56,22 @@ public class ImageService {
         post.getPostImages().addAll(postImages);
     }
 
-    public void updatePostImage(Post post, JsonNode jsonContent) {
+    public void updatePostImage(Post post, JsonNode jsonContent, @Nullable String titleImageFileName) {
         Set<PostImage> postImages = postImageRepository.findByPost(post);
         Set<String> newImageUrls = getImageUrls(jsonContent);
+
+        // 썸네일 이미지 처리
+        String prevThumbnailFileName = post.getTitleImageFileName();
+        if (prevThumbnailFileName == null && titleImageFileName != null){
+            Image image = imageRepository.findByFileName(titleImageFileName);
+            minioService.createThumbnail(post.getId() + "-" + titleImageFileName, image.getContentType());
+        } else if (prevThumbnailFileName != null && titleImageFileName == null){
+            minioService.deleteThumbnail(post.getId() + "-" + prevThumbnailFileName);
+        } else if (prevThumbnailFileName != null && !prevThumbnailFileName.equals(titleImageFileName)){
+            Image image = imageRepository.findByFileName(titleImageFileName);
+            minioService.deleteThumbnail(post.getId() + "-" + prevThumbnailFileName);
+            minioService.createThumbnail(post.getId() + "-" + titleImageFileName, image.getContentType());
+        }
 
         Set<PostImage> deletedPostImages = new HashSet<>();
         Set<Image> deletedImages = new HashSet<>();
