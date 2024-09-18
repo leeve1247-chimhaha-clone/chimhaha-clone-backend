@@ -38,8 +38,8 @@ public class ImageService {
         return imageUrls;
     }
 
-    public void createPostImages(Post post, JsonNode jsonContent, @Nullable String titleImageFileName) {
-        Set<String> imageUrls = getImageUrls(jsonContent);
+    public void createPostImages(Post post) {
+        Set<String> imageUrls = getImageUrls(post.getJsonContent());
         if (imageUrls.isEmpty()) return;
 
         Set<PostImage> postImages = new HashSet<>();
@@ -47,7 +47,7 @@ public class ImageService {
         for (Image image : images) {
             PostImage postImage = new PostImage(post, image, ImageStatus.POSTED);
             postImages.add(postImage);
-            if (image.getFileName().equals(titleImageFileName)) {
+            if (image.getFileName().equals(post.getTitleImageFileName())) {
                 postImage.setMainImage(true);
                 // minio 이미지 thumbnail 생성
                 minioService.createThumbnail(post.getId() + "-" + image.getFileName(), image.getContentType());
