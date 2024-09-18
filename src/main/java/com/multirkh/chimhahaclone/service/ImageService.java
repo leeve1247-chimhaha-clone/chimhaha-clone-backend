@@ -103,6 +103,26 @@ public class ImageService {
         }
     }
 
+    public void deletePostImage(Post post) {
+        Set<PostImage> postImages = postImageRepository.findByPost(post);
+        String titleImageFileName = post.getTitleImageFileName();
+        if (titleImageFileName != null) {
+            minioService.deleteThumbnail(post.getId() + "-" + titleImageFileName);
+        }
+        Set<Image> deletedImages = new HashSet<>();
+        postImages.forEach(postImage -> {
+            Image image = postImage.getImage();
+            Set<PostImage> postImagesOfImage = image.getPostImages();
+            postImagesOfImage.remove(postImage);
+            if (postImagesOfImage.isEmpty()) {
+                //minio 이미지 삭제
+                deletedImages.add(image);
+            }
+        });
+        imageRepository.deleteAllByImages(deletedImages);
+        minioService.deleteImages(deletedImages.stream().map(Image::getFileName).collect(Collectors.toSet()));
+    }
+
     @Scheduled(fixedRate = 1000 * 60 * 15) // 15분마다 실행
     public void deleteUnusedImages() {
         Set<Image> imagesEditedBefore = imageRepository.findImagesEditedBefore(ZonedDateTime.now().minusDays(1));
