@@ -86,8 +86,8 @@ class PostRepositoryTest {
         commentRepository.save(new Comment(jsonNodeOf("{\"ops\": [{\"insert\": \"comment sample 4\\n\"}]}"), post2, user1, 0));
         commentRepository.save(new Comment(jsonNodeOf("{\"ops\": [{\"insert\": \"comment sample 5\\n\"}]}"), post2, user2, 0));
 
-        imageService.createPostImages(post2, jsonNode2, "6.png");
-        imageService.createPostImages(post3, jsonNode3, "1.png");
+        imageService.createPostImages(post2);
+        imageService.createPostImages(post3);
         
         log.info(String.valueOf(System.identityHashCode(post1)));
         em.flush(); // db commit
