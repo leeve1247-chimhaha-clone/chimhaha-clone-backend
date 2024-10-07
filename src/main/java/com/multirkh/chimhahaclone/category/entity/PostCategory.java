@@ -1,5 +1,6 @@
-package com.multirkh.chimhahaclone.category;
+package com.multirkh.chimhahaclone.category.entity;
 
+import com.multirkh.chimhahaclone.category.MAJOR_CATEGORY;
 import com.multirkh.chimhahaclone.category.subCategory.HOBBY_CATEGORY;
 import com.multirkh.chimhahaclone.entity.Post;
 import jakarta.persistence.*;
