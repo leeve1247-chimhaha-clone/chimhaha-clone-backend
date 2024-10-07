@@ -2,7 +2,8 @@ package com.multirkh.chimhahaclone.repository;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.multirkh.chimhahaclone.bootup.DataInitializer;
-import com.multirkh.chimhahaclone.category.PostCategory;
+import com.multirkh.chimhahaclone.category.entity.PostCategory;
+import com.multirkh.chimhahaclone.category.repository.PostCategoryRepository;
 import com.multirkh.chimhahaclone.config.JwtDecoderTestConfig;
 import com.multirkh.chimhahaclone.dto.CommentDto;
 import com.multirkh.chimhahaclone.dto.PostDetailDto;

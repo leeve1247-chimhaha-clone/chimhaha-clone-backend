@@ -5,7 +5,7 @@ import com.multirkh.chimhahaclone.dto.PostListComponentDto;
 import com.multirkh.chimhahaclone.dto.PostReceived;
 import com.multirkh.chimhahaclone.entity.Post;
 import com.multirkh.chimhahaclone.redis.ViewCountService;
-import com.multirkh.chimhahaclone.repository.PostCategoryRepository;
+import com.multirkh.chimhahaclone.category.repository.PostCategoryRepository;
 import com.multirkh.chimhahaclone.repository.PostLikesUserRepository;
 import com.multirkh.chimhahaclone.repository.PostRepository;
 import com.multirkh.chimhahaclone.repository.UserRepository;
@@ -13,7 +13,6 @@ import com.multirkh.chimhahaclone.service.image.ImageService;
 import com.multirkh.chimhahaclone.service.post.PostService;
 import jakarta.annotation.security.RolesAllowed;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

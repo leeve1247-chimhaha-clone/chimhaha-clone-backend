@@ -1,7 +1,7 @@
 package com.multirkh.chimhahaclone.service.post;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.multirkh.chimhahaclone.category.PostCategory;
+import com.multirkh.chimhahaclone.category.entity.PostCategory;
 import com.multirkh.chimhahaclone.dto.PostDetailDto;
 import com.multirkh.chimhahaclone.dto.PostListComponentDto;
 import com.multirkh.chimhahaclone.dto.PostReceived;
@@ -10,7 +10,11 @@ import com.multirkh.chimhahaclone.entity.PostLikesUser;
 import com.multirkh.chimhahaclone.entity.enums.PostStatus;
 import com.multirkh.chimhahaclone.entity.User;
 import com.multirkh.chimhahaclone.exception.FindDeletedPostException;
-import com.multirkh.chimhahaclone.repository.*;
+import com.multirkh.chimhahaclone.category.repository.PostCategoryRepository;
+import com.multirkh.chimhahaclone.repository.CommentRepository;
+import com.multirkh.chimhahaclone.repository.PostLikesUserRepository;
+import com.multirkh.chimhahaclone.repository.PostRepository;
+import com.multirkh.chimhahaclone.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
