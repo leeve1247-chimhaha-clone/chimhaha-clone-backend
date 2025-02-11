@@ -80,7 +80,7 @@ public class PostService {
         if (request.getTitle() == null) throw new IllegalArgumentException("title is null");
         if (request.getContent() == null) throw new IllegalArgumentException("content is null");
         if (request.getPostCategoryName() == null) throw new IllegalArgumentException("postCategoryName is null");
-        if (request.getTitleImageFileName() == null) throw new IllegalArgumentException("titleImageFileName is null");
+//        if (request.getTitleImageFileName() == null) throw new IllegalArgumentException("titleImageFileName is null");
     }
 
     public PostDetailDto findPost(Long listNum) {
