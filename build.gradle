@@ -13,7 +13,7 @@ version = '0.0.1-SNAPSHOT'
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(17)
     }
 }
 
@@ -55,4 +55,9 @@ dependencyManagement {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+tasks.register('extractJar', Copy) {
+    from zipTree('build/libs/chimhaha_clone_backend-0.0.1-SNAPSHOT.jar')
+    into 'build/dependency'
 }

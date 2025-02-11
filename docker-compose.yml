@@ -1,13 +1,27 @@
 services:
+  my-redis-container:
+    image: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - my-network
+    volumes:
+      - redis-data:/data
+
   my-spring-container:
     container_name: my-spring-container
+    ports:
+      - "8080:8080"
     build:
       context: .
       dockerfile: Dockerfile
     networks:
-      my-network:
-        ipv4_address: 172.22.0.3
+      - my-network
+
   mysql-container:
+    environment:
+      MYSQL_ROOT_PASSWORD: F55UiLjiBJEOCxf
+      MYSQL_DATABASE: clone_database
     ports:
       - "3308:3306"  # 호스트와 컨테이너 간의 포트 매핑
     container_name: mysql-container
@@ -15,13 +29,21 @@ services:
     volumes:
       - mysql-container-data:/var/lib/mysql
     networks:
-      my-network:
-        ipv4_address: 172.22.0.4
+      - my-network
+  my-minio-container:
+    image: minio/minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+    networks:
+      - my-network
+    command: server /data --console-address ":9001"
 volumes:
     mysql-container-data:
+    minio-data:
+    redis-data:
 networks:
   my-network:
-    ipam:
-      config:
-        - subnet: 172.22.0.0/16
-          gateway: 172.22.0.1
+    external: true
