@@ -26,7 +26,7 @@ public class PostListComponentDto {
         this.status = post.getStatus();
         this.createdDate = post.getCreatedDate();
         this.views = post.getViews();
-        this.category = post.getCategory().getName();
+        this.category = post.getCategory().getKey();
         this.likes = post.getLikes();
         this.postId = post.getId().intValue();
         this.titleImageId = post.getTitleImageFileName();

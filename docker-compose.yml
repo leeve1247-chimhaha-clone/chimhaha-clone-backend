@@ -27,6 +27,7 @@ services:
     container_name: mysql-container
     image: mysql:latest
     volumes:
+      - ./mysql-init:/docker-entrypoint-initdb.d/:ro
       - mysql-container-data:/var/lib/mysql
     networks:
       - my-network
