@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 public class PostReceived {
     @JsonProperty("category")
-    private String postCategoryName;
+    private String postCategoryKey;
     private JsonNode content;
     private String title;
     private String user;

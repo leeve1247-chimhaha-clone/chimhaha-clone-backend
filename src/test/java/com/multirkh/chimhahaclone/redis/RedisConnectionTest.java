@@ -1,6 +1,5 @@
 package com.multirkh.chimhahaclone.redis;
 
-import com.multirkh.chimhahaclone.bootup.DataInitializer;
 import com.multirkh.chimhahaclone.config.JwtDecoderTestConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -13,7 +12,7 @@ import java.util.Objects;
 
 @SpringBootTest
 @Slf4j
-@Import({JwtDecoderTestConfig.class, DataInitializer.class})
+@Import({JwtDecoderTestConfig.class})
 public class RedisConnectionTest {
     @Autowired
     private ViewCountService viewCountService;

@@ -1,7 +1,6 @@
 package com.multirkh.chimhahaclone.repository;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.multirkh.chimhahaclone.bootup.DataInitializer;
 import com.multirkh.chimhahaclone.category.entity.PostCategory;
 import com.multirkh.chimhahaclone.category.repository.PostCategoryRepository;
 import com.multirkh.chimhahaclone.config.JwtDecoderTestConfig;
@@ -29,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Slf4j
 @SpringBootTest
-@Import({JwtDecoderTestConfig.class, DataInitializer.class})
+@Import({JwtDecoderTestConfig.class})
 @Transactional
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class PostRepositoryTest {
@@ -75,7 +74,7 @@ class PostRepositoryTest {
         JsonNode jsonNode1 = jsonNodeOf("{\"ops\": [{\"insert\": \"post sample 1\\n\"}]}");
         JsonNode jsonNode2 = jsonNodeOf("{\"ops\": [{\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=6.png\"}}, {\"insert\": \"\\n\"}]}");
         JsonNode jsonNode3 = jsonNodeOf("{\"ops\": [{\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=1.png\"}}, {\"insert\": \"\\n\"}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=2.png\"}}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=2.png\"}}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=2.png\"}}, {\"insert\": \"\\n\\n\", \"attributes\": {\"align\": \"center\"}}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=2.png\"}}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=2.png\"}}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=2.png\"}}, {\"insert\": \"\\n\\n\", \"attributes\": {\"align\": \"center\"}}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=2.png\"}}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=2.png\"}}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=2.png\"}}, {\"insert\": \"\\n\\n\", \"attributes\": {\"align\": \"right\"}}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=3.png\"}}, {\"insert\": \"\\n\"}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=4.png\"}}, {\"insert\": \"\\n\"}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=5.png\"}}, {\"insert\": \"\\n\"}, {\"insert\": {\"image\": \"http://testtest/aas?preview=true&prefix=6.png\"}}, {\"insert\": \"\\n\"}]}");
-        PostCategory categoryHobby = postCategoryRepository.findByName("HOBBY");
+        PostCategory categoryHobby = postCategoryRepository.findByKey("HOBBY");
 
         Post post1 = postRepository.save(new Post("Test Post 1", jsonNode1, user1, categoryHobby, null));
         Post post2 = postRepository.save(new Post("Test Post 2", jsonNode2, user1, categoryHobby, "6.png"));
@@ -104,7 +103,7 @@ class PostRepositoryTest {
         String title = "Test Post3";
         JsonNode jsonContent = jsonNodeOf("{\"ops\": [{\"insert\": \"post sample 3\\n\"}]}");
         ;
-        PostCategory categoryHobby = postCategoryRepository.findByName("HOBBY");
+        PostCategory categoryHobby = postCategoryRepository.findByKey("HOBBY");
         Post post = postRepository.save(new Post(title, jsonContent, user, categoryHobby, ""));
         assertEquals(title, post.getTitle());
     }

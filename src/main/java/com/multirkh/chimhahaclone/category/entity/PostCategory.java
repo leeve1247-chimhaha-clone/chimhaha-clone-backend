@@ -1,7 +1,5 @@
 package com.multirkh.chimhahaclone.category.entity;
 
-import com.multirkh.chimhahaclone.category.MAJOR_CATEGORY;
-import com.multirkh.chimhahaclone.category.subCategory.HOBBY_CATEGORY;
 import com.multirkh.chimhahaclone.entity.Post;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -12,8 +10,7 @@ import java.util.List;
 
 @Entity
 @Table(
-        name = "post_category",
-        uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "level"})}
+        name = "post_category"
 )
 @Getter
 @NoArgsConstructor
@@ -24,7 +21,13 @@ public class PostCategory {
     private Long id;
 
     @Column(nullable = false)
-    private String name;
+    private Integer level;
+
+    @Column(nullable = false)
+    private String key;
+
+    @Column(name = "kor")
+    private String value;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
@@ -35,18 +38,4 @@ public class PostCategory {
 
     @OneToMany(mappedBy = "category")
     private final List<Post> posts = new ArrayList<>();
-
-    @Column(nullable = false)
-    private Integer level;
-
-    public PostCategory(MAJOR_CATEGORY majorCategory) {
-        this.name = majorCategory.toString();
-        this.level = 1;
-    }
-
-    public PostCategory(HOBBY_CATEGORY majorCategory, PostCategory parent) {
-        this.name = majorCategory.toString();
-        this.parent = parent;
-        this.level = 2;
-    }
 }

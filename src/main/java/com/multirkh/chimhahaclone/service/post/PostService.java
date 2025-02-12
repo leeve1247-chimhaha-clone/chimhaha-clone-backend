@@ -34,7 +34,7 @@ public class PostService {
     public Post createPost(PostReceived request) {
         String user_auth_id = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByUserAuthId(user_auth_id);
-        PostCategory postCategory = postCategoryRepository.findByName(request.getPostCategoryName());
+        PostCategory postCategory = postCategoryRepository.findByKey(request.getPostCategoryKey());
         JsonNode jsonContent = request.getContent();
         String titleImageFileName = request.getTitleImageFileName();
         String title = request.getTitle();
@@ -44,7 +44,7 @@ public class PostService {
     public String updatePost(Post post, PostReceived request) {
         post.setTitle(request.getTitle());
         post.setJsonContent(request.getContent());
-        post.setCategory(postCategoryRepository.findByName(request.getPostCategoryName()));
+        post.setCategory(postCategoryRepository.findByKey(request.getPostCategoryKey()));
         post.setTitleImageFileName(request.getTitleImageFileName());
         Post savedPost = postRepository.save(post);
         return savedPost.getId().toString();
@@ -79,7 +79,7 @@ public class PostService {
     private void validatePostForm(PostReceived request) {
         if (request.getTitle() == null) throw new IllegalArgumentException("title is null");
         if (request.getContent() == null) throw new IllegalArgumentException("content is null");
-        if (request.getPostCategoryName() == null) throw new IllegalArgumentException("postCategoryName is null");
+        if (request.getPostCategoryKey() == null) throw new IllegalArgumentException("postCategoryName is null");
 //        if (request.getTitleImageFileName() == null) throw new IllegalArgumentException("titleImageFileName is null");
     }
 
