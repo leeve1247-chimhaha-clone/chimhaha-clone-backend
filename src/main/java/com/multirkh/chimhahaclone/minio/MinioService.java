@@ -60,7 +60,7 @@ public class MinioService {
         try {
             Iterable<Result<DeleteError>> results =
                     minioClient.removeObjects(
-                            RemoveObjectsArgs.builder().bucket("my-bucketname").objects(objects).build());
+                            RemoveObjectsArgs.builder().bucket(minioBucketName).objects(objects).build());
             for (Result<DeleteError> result : results) {
                 DeleteError error = result.get();
                 System.out.println(

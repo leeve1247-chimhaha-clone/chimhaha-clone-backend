@@ -1,8 +1,6 @@
 package com.multirkh.chimhahaclone.minio;
 
-import io.minio.BucketExistsArgs;
-import io.minio.MakeBucketArgs;
-import io.minio.MinioClient;
+import io.minio.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -10,6 +8,8 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.multirkh.chimhahaclone.util.FileUtil.readFileToString;
 
 @Configuration
 @Slf4j
@@ -39,13 +39,22 @@ public class MinioConfig {
             Map<String, Boolean> founds = new HashMap<>();
             founds.put(minioBucketName, minioClient.bucketExists(BucketExistsArgs.builder().bucket(minioBucketName).build()));
             founds.put(thumbnailBucketName, minioClient.bucketExists(BucketExistsArgs.builder().bucket(thumbnailBucketName).build()));
-            for(Map.Entry<String, Boolean> entry : founds.entrySet()) {
+            for (Map.Entry<String, Boolean> entry : founds.entrySet()) {
                 if (!entry.getValue()) {
                     minioClient.makeBucket(MakeBucketArgs.builder().bucket(entry.getKey()).build());
                 } else {
                     log.info("Bucket '{}' already exists.", entry.getKey());
                 }
             }
+
+            for (Map.Entry<String, Boolean> entry : founds.entrySet()) {
+                String publicPolicy = readFileToString("minio/policy/public.json")
+                        .replace("{%BUCKET_NAME%}", entry.getKey());
+                minioClient.setBucketPolicy(
+                        SetBucketPolicyArgs.builder().bucket(entry.getKey()).config(publicPolicy).build()
+                );
+            }
+
             return minioClient;
         } catch (Exception e) {
             throw new RuntimeException("Error occurred while creating minio client", e);
