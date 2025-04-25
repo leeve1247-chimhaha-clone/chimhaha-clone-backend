@@ -2,7 +2,6 @@ package com.multirkh.chimhahaclone.service.image.resize;
 
 import net.coobird.thumbnailator.Thumbnails;
 import net.coobird.thumbnailator.geometry.Positions;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import javax.imageio.ImageIO;
@@ -34,19 +33,16 @@ public class ImageResizerService {
         }
     }
 
-    @NotNull
     private int[] getCroppedSize(BufferedImage bufferedImage, int[] fixedDimension) {
         int[] imageDimensions = getInputStreamImageDimension(bufferedImage);
         return getMinimumCroppedSize(imageDimensions, fixedDimension);
     }
 
-    @NotNull
     private int[] getInputStreamImageDimension(BufferedImage bufferedImage) {
         return new int[]{bufferedImage.getWidth(), bufferedImage.getHeight()};
     }
 
-    @NotNull
-    private int[] getMinimumCroppedSize(@NotNull int[] dimensions, @NotNull int[] fixedSize) {
+    private int[] getMinimumCroppedSize(int[] dimensions, int[] fixedSize) {
         int fixedWidth = fixedSize[0];
         int fixedHeight = fixedSize[1];
 

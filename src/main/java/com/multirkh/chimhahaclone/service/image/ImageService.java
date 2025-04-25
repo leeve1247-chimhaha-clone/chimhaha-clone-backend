@@ -8,6 +8,7 @@ import com.multirkh.chimhahaclone.entity.PostImage;
 import com.multirkh.chimhahaclone.minio.MinioService;
 import com.multirkh.chimhahaclone.repository.ImageRepository;
 import com.multirkh.chimhahaclone.repository.PostImageRepository;
+import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -16,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Objects;
