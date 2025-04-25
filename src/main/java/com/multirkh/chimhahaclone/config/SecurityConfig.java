@@ -23,7 +23,7 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .cors(corsConfigurer -> corsConfigurer.configurationSource(_request -> {
                     CorsConfiguration cors = new CorsConfiguration();
-                    cors.setAllowedOrigins(List.of("http://localhost:5173")); // 외부에서 localhost 으로 서버가 돌아가고 있다.
+                    cors.setAllowedOrigins(List.of("https://00719293.xyz")); // 외부에서 localhost 으로 서버가 돌아가고 있다.
                     cors.setAllowedMethods(List.of("*"));
                     cors.setAllowCredentials(true);
                     cors.setAllowedHeaders(Collections.singletonList("*"));
