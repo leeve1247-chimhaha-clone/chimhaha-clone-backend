@@ -56,6 +56,6 @@ tasks.named('test') {
 }
 
 tasks.register('extractJar', Copy) {
-    from zipTree('build/libs/chimhaha_clone_backend-0.0.1-SNAPSHOT.jar')
+    from zipTree("build/libs/${project.name}-0.0.1-SNAPSHOT.jar")
     into 'build/dependency'
 }
