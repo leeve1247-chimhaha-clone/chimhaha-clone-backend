@@ -1,9 +1,12 @@
 package com.multirkh.chimhahaclone.minio;
 
+import com.multirkh.chimhahaclone.entity.Image;
+import com.multirkh.chimhahaclone.repository.ImageRepository;
 import com.multirkh.chimhahaclone.service.image.resize.ImageResizerService;
 import com.multirkh.chimhahaclone.service.image.resize.InputStreamAndLength;
 import com.multirkh.chimhahaclone.util.IdGenerator;
 import io.minio.*;
+import io.minio.http.Method;
 import io.minio.messages.DeleteError;
 import io.minio.messages.DeleteObject;
 import lombok.RequiredArgsConstructor;
@@ -13,23 +16,21 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
 public class MinioService {
     private final ImageResizerService imageResizerService;
-    @Value("${minio.export-url}")
-    private String minioExportUrl;
     @Value("${minio.bucket-name}")
     private String minioBucketName;
     @Value("${minio.thumbnail-bucket-name}")
     private String thumbnailBucketName;
 
     private final MinioClient minioClient;
+
+    private final ImageRepository imageRepository;
 
     public String postFileWithRandomFileName(@NotNull MultipartFile file) {
         String randomImageName = IdGenerator.generateUniqueId();
@@ -47,9 +48,23 @@ public class MinioService {
         return randomImageFileName;
     }
 
-    // randomImageFileName : "파일이름 명.확장자" ex : "this_is_random_string_20.png"
-    public String getPreviewUrl(String randomImageFileName) {
-        return minioExportUrl + "/api/v1/buckets/" + minioBucketName + "/objects/download?preview=true&prefix=" + randomImageFileName;
+    public String getOrCreateUrl(String randomImageFileName) {
+        Image image = imageRepository.findByFileName(randomImageFileName);
+        if (image != null) {
+            return image.getUrl();
+        }
+        try {
+            return minioClient
+                    .getPresignedObjectUrl(
+                    GetPresignedObjectUrlArgs.builder()
+                            .method(Method.GET)
+                            .bucket(minioBucketName)
+                            .object(randomImageFileName)
+                            .expiry(7, TimeUnit.DAYS)
+                            .build()).replace("http://minio-container:9000/","");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void deleteImages(Set<String> fileNames) {

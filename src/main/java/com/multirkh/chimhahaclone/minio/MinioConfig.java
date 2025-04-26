@@ -47,14 +47,6 @@ public class MinioConfig {
                 }
             }
 
-            for (Map.Entry<String, Boolean> entry : founds.entrySet()) {
-                String publicPolicy = readFileToString("minio/policy/public.json")
-                        .replace("{%BUCKET_NAME%}", entry.getKey());
-                minioClient.setBucketPolicy(
-                        SetBucketPolicyArgs.builder().bucket(entry.getKey()).config(publicPolicy).build()
-                );
-            }
-
             return minioClient;
         } catch (Exception e) {
             throw new RuntimeException("Error occurred while creating minio client", e);
