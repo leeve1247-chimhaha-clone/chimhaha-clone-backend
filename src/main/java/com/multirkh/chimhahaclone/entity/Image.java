@@ -3,6 +3,7 @@ package com.multirkh.chimhahaclone.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -24,9 +25,16 @@ public class Image {
 
     private String contentType;
 
-    public Image(String fileName, String contentType) {
+    @Setter
+    @Column(length = 512)
+    private String url;
+    @Setter
+    private ZonedDateTime expirationDate;
+    public Image(String fileName, String contentType, String url, ZonedDateTime expirationDate) {
         this.fileName = fileName;
         this.contentType = contentType;
+        this.url = url;
+        this.expirationDate = expirationDate;
     }
 
     @OneToMany(mappedBy = "image", cascade = CascadeType.ALL)

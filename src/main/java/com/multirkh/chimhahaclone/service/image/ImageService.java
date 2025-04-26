@@ -11,6 +11,7 @@ import com.multirkh.chimhahaclone.repository.PostImageRepository;
 import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,8 @@ public class ImageService {
     private final ImageRepository imageRepository;
     private final PostImageRepository postImageRepository;
     private final MinioService minioService;
+    @Value("${minio.export-url}")
+    private String minioPublicUrl;
 
     public Set<String> getImageUrls(JsonNode jsonContent) {
         Set<String> imageUrls = new HashSet<>();
@@ -140,7 +143,8 @@ public class ImageService {
 
     public String createImage(MultipartFile file) {
         String randomImageName = minioService.postFileWithRandomFileName(file);
-        imageRepository.save(new Image(randomImageName, file.getContentType()));
-        return minioService.getPreviewUrl(randomImageName);
+        String url = minioService.getOrCreateUrl(randomImageName);
+        imageRepository.save(new Image(randomImageName, file.getContentType(), url, ZonedDateTime.now().plusHours(167)));
+        return minioPublicUrl + "/" + url;
     }
 }
