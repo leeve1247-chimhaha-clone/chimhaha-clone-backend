@@ -13,7 +13,6 @@ import java.util.Set;
 
 @Entity
 @Getter
-@Table(name = "users")
 @NoArgsConstructor
 public class User {
     @Id
@@ -24,7 +23,7 @@ public class User {
     @Column(nullable = true)
     private String userName;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true, updatable = false)
     private String userAuthId;
 
     @OneToMany(mappedBy = "user") // mappedBy: 연관관계의 주인이 아님을 나타냄 (읽기 전용) DB 에선 안보임
