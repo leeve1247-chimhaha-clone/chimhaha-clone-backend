@@ -57,7 +57,12 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
+tasks.register('cleanExtract', Delete) {
+    delete 'build/dependency'
+}
+
 tasks.register('extractJar', Copy) {
+    dependsOn 'cleanExtract'
     from zipTree("build/libs/${project.name}-0.0.1-SNAPSHOT.jar")
     into 'build/dependency'
 }
