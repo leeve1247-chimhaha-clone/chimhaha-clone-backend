@@ -26,8 +26,8 @@ public class PostCategory {
     @Column(nullable = false)
     private String key;
 
-    @Column(name = "kor")
-    private String value;
+    @Column(name = "korean")
+    private String korean;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
