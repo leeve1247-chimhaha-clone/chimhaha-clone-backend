@@ -40,7 +40,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/posts").permitAll()
                         .requestMatchers("/posts/detail").permitAll()
-                        .requestMatchers("/post-categories").permitAll()
+                        .requestMatchers("/post-categories/*").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exceptions -> exceptions

@@ -21,4 +21,16 @@ public class PostCategoryService {
                 .map(PostCategoryDto::new)
                 .toList();
     }
+
+    public List<PostCategoryDto> findAllFlat() {
+        List<PostCategory> postCategoryList = postCategoryRepository.findAll();
+        return postCategoryList.stream().map( postCategory ->
+                new PostCategoryDto(
+                        postCategory.getId(),
+                        postCategory.getLevel(),
+                        postCategory.getKey(),
+                        postCategory.getKorean()
+                )
+        ).toList();
+    }
 }
