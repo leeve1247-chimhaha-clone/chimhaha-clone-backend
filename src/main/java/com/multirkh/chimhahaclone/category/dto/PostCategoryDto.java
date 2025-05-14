@@ -27,4 +27,11 @@ public class PostCategoryDto {
             postCategory.getChildren().forEach(child -> children.add(new PostCategoryDto(child)));
         }
     }
+
+    public PostCategoryDto(Long id, Integer level, String key, String korean){
+           this.id = id;
+           this.level = level;
+           this.key = key;
+           this.korean = korean;
+    }
 }

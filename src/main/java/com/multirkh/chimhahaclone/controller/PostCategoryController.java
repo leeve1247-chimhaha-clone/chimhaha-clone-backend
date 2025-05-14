@@ -18,4 +18,9 @@ public class PostCategoryController {
     public List<PostCategoryDto> getPostCategories() {
         return postCategoryService.findAllTree();
     }
+
+    @GetMapping("/post-categories/flat")
+    public List<PostCategoryDto> getPostCategoriesFlat() {
+        return postCategoryService.findAllFlat();
+    }
 }
