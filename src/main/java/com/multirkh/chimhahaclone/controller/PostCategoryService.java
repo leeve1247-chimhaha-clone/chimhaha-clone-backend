@@ -6,7 +6,6 @@ import com.multirkh.chimhahaclone.category.repository.PostCategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -23,7 +22,7 @@ public class PostCategoryService {
     }
 
     public List<PostCategoryDto> findAllFlat() {
-        List<PostCategory> postCategoryList = postCategoryRepository.findAll();
+        List<PostCategory> postCategoryList = postCategoryRepository.findAllFlat();
         return postCategoryList.stream().map( postCategory ->
                 new PostCategoryDto(
                         postCategory.getId(),
