@@ -42,6 +42,8 @@ public class SecurityConfig {
                         .requestMatchers("/posts/detail").permitAll()
                         .requestMatchers("/post-categories").permitAll()
                         .requestMatchers("/post-categories/*").permitAll()
+                        .requestMatchers("/get/presigned-url").permitAll()
+                        .requestMatchers("/get/presigned-url2").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exceptions -> exceptions

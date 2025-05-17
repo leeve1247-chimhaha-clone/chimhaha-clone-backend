@@ -8,6 +8,7 @@ import com.multirkh.chimhahaclone.entity.PostImage;
 import com.multirkh.chimhahaclone.minio.MinioService;
 import com.multirkh.chimhahaclone.repository.ImageRepository;
 import com.multirkh.chimhahaclone.repository.PostImageRepository;
+import com.multirkh.chimhahaclone.util.IdGenerator;
 import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +37,11 @@ public class ImageService {
     private final MinioService minioService;
     @Value("${minio.export-url}")
     private String minioPublicUrl;
+
+    public PresignedUrlDTO getPresignedUrl() {
+        String randomImageName = IdGenerator.generateUniqueId();
+        return new PresignedUrlDTO(minioService.getPresignedUrl(randomImageName), randomImageName);
+    }
 
     public Set<String> getImageUrls(JsonNode jsonContent) {
         Set<String> imageUrls = new HashSet<>();
@@ -146,5 +152,9 @@ public class ImageService {
         String url = minioService.getOrCreateUrl(randomImageName);
         imageRepository.save(new Image(randomImageName, file.getContentType(), url, ZonedDateTime.now().plusHours(167)));
         return minioPublicUrl + "/" + url;
+    }
+
+    public String getPresignedUrl2(String fileName) {
+        return minioService.getPresignedUrl2(fileName);
     }
 }

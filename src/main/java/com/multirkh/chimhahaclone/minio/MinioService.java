@@ -32,6 +32,21 @@ public class MinioService {
 
     private final ImageRepository imageRepository;
 
+    public String getPresignedUrl(String randomImageName) {
+        try {
+            return minioClient
+                    .getPresignedObjectUrl(
+                            GetPresignedObjectUrlArgs.builder()
+                                    .method(Method.PUT)
+                                    .bucket(minioBucketName)
+                                    .object(randomImageName)
+                                    .expiry(15, TimeUnit.MINUTES)
+                                    .build()).replace("http://minio-container:9000/","");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public String postFileWithRandomFileName(@NotNull MultipartFile file) {
         String randomImageName = IdGenerator.generateUniqueId();
         String randomImageFileName = randomImageName + "." + Objects.requireNonNull(file.getContentType()).split("/")[1];
@@ -132,6 +147,21 @@ public class MinioService {
                             .bucket(thumbnailBucketName)
                             .object(postIdAndFileName)
                             .build());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String getPresignedUrl2(String fileName) {
+        try {
+            return minioClient
+                    .getPresignedObjectUrl(
+                            GetPresignedObjectUrlArgs.builder()
+                                    .method(Method.GET)
+                                    .bucket(minioBucketName)
+                                    .object(fileName)
+                                    .expiry(7, TimeUnit.DAYS)
+                                    .build()).replace("http://minio-container:9000/","");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
