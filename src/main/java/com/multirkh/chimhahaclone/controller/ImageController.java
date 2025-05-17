@@ -1,8 +1,10 @@
 package com.multirkh.chimhahaclone.controller;
 
 import com.multirkh.chimhahaclone.service.image.ImageService;
+import com.multirkh.chimhahaclone.service.image.PresignedUrlDTO;
 import jakarta.annotation.security.RolesAllowed;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,5 +20,15 @@ public class ImageController {
     public String uploadFile(@RequestParam("file") MultipartFile file) {
         imageService.validateImage(file);
         return imageService.createImage(file);
+    }
+
+    @GetMapping("/get/presigned-url")
+    public PresignedUrlDTO getPresignedUrl() {
+        return imageService.getPresignedUrl();
+    }
+
+    @GetMapping("/get/presigned-url2")
+    public String getPresignedUrl2(@RequestParam("filename") String fileName ){
+        return imageService.getPresignedUrl2(fileName);
     }
 }
