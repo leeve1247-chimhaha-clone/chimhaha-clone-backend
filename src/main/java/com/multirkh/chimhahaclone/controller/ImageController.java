@@ -22,13 +22,14 @@ public class ImageController {
         return imageService.createImage(file);
     }
 
+    @RolesAllowed("USER")
     @GetMapping("/get/presigned-url")
     public PresignedUrlDTO getPresignedUrl() {
         return imageService.getPresignedUrl();
     }
 
-    @GetMapping("/get/presigned-url2")
-    public String getPresignedUrl2(@RequestParam("filename") String fileName ){
-        return imageService.getPresignedUrl2(fileName);
+    @GetMapping("/get/src-url")
+    public String getSrcUrl(@RequestParam("filename") String fileName ){
+        return imageService.getSrcUrl(fileName);
     }
 }

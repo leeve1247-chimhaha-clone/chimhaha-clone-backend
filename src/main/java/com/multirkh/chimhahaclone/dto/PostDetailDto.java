@@ -36,4 +36,18 @@ public class PostDetailDto {
         this.comments = post.getComments().stream().filter(comment -> comment.getParent() == null).map(CommentDto::new).toList();
         this.userAuthId = post.getUser().getUserAuthId();
     }
+
+    public PostDetailDto(Post post, JsonNode content){
+        this.title = post.getTitle();
+        this.username = post.getUser().getUserName();
+        this.status = post.getStatus();
+        this.createdDate = post.getCreatedDate();
+        this.views = post.getViews();
+        this.category = post.getCategory().getKey();
+        this.likes = post.getLikes();
+        this.postId = post.getId().intValue();
+        this.content = content;
+        this.comments = post.getComments().stream().filter(comment -> comment.getParent() == null).map(CommentDto::new).toList();
+        this.userAuthId = post.getUser().getUserAuthId();
+    }
 }

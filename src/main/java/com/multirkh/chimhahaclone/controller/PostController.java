@@ -13,8 +13,11 @@ import com.multirkh.chimhahaclone.service.image.ImageService;
 import com.multirkh.chimhahaclone.service.post.PostService;
 import jakarta.annotation.security.RolesAllowed;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -36,21 +39,25 @@ public class PostController {
     }
 
     @GetMapping("/posts")
-    public List<PostListComponentDto> getPosts() {
-        return postService.findPostList();
+    public List<PostListComponentDto> getPosts(@RequestParam(name="category", required = false) String category) {
+        if (category == null){return postService.findPostList();}
+        return postService.findPostList(category);
     }
 
     @GetMapping("/posts/detail")
-    public PostDetailDto getPosts(@RequestParam(name = "num", defaultValue = "0") Long listNum) {
-        viewCountService.incrementViewCount(listNum);
-        return  postService.findPost(listNum);
+    public PostDetailDto getPosts(@RequestParam(name = "num") Long postNum) {
+        viewCountService.incrementViewCount(postNum);
+        return  postService.findPost(postNum);
     }
 
     @PostMapping("/save")
-    @RolesAllowed("USER")
     public String createPost(
             @RequestBody PostReceived request
     ) {
+        Collection<? extends GrantedAuthority> authorities = SecurityContextHolder.getContext().getAuthentication().getAuthorities();
+        for (GrantedAuthority authority : authorities) {
+            System.out.println("Authority: " + authority.getAuthority());
+        }
         postService.validateCreatePost(request);
         Post post = postService.createPost(request);
         imageService.createPostImages(post);
