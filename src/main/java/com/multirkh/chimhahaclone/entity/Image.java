@@ -28,8 +28,10 @@ public class Image {
     @Setter
     @Column(length = 512)
     private String url;
+
     @Setter
     private ZonedDateTime expirationDate;
+
     public Image(String fileName, String contentType, String url, ZonedDateTime expirationDate) {
         this.fileName = fileName;
         this.contentType = contentType;

@@ -152,7 +152,7 @@ public class MinioService {
         }
     }
 
-    public String getPresignedUrl2(String fileName) {
+    public String getSrcUrl(String fileName) {
         try {
             return minioClient
                     .getPresignedObjectUrl(

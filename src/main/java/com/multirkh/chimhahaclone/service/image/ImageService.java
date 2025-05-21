@@ -1,6 +1,7 @@
 package com.multirkh.chimhahaclone.service.image;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.multirkh.chimhahaclone.entity.Image;
 import com.multirkh.chimhahaclone.entity.enums.ImageStatus;
 import com.multirkh.chimhahaclone.entity.Post;
@@ -21,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.ZonedDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -38,8 +40,17 @@ public class ImageService {
     @Value("${minio.export-url}")
     private String minioPublicUrl;
 
+    public JsonNode applyPresignedUrlToImageSrc(JsonNode jsonContent) {
+        JsonNode jsonNode = jsonContent.deepCopy();
+        applyPresignedUrlToImageSrcRecursive(jsonNode);
+        return jsonNode;
+    }
+
     public PresignedUrlDTO getPresignedUrl() {
         String randomImageName = IdGenerator.generateUniqueId();
+        if (imageRepository.findByFileName(randomImageName) != null) {
+            return getPresignedUrl();
+        }
         return new PresignedUrlDTO(minioService.getPresignedUrl(randomImageName), randomImageName);
     }
 
@@ -73,12 +84,12 @@ public class ImageService {
 
         // 썸네일 이미지 처리
         String prevThumbnailFileName = post.getTitleImageFileName();
-        if (prevThumbnailFileName == null && titleImageFileName != null){
+        if (prevThumbnailFileName == null && titleImageFileName != null) {
             Image image = imageRepository.findByFileName(titleImageFileName);
             minioService.createThumbnail(post.getId() + "-" + titleImageFileName, image.getContentType());
-        } else if (prevThumbnailFileName != null && titleImageFileName == null){
+        } else if (prevThumbnailFileName != null && titleImageFileName == null) {
             minioService.deleteThumbnail(post.getId() + "-" + prevThumbnailFileName);
-        } else if (prevThumbnailFileName != null && !prevThumbnailFileName.equals(titleImageFileName)){
+        } else if (prevThumbnailFileName != null && !prevThumbnailFileName.equals(titleImageFileName)) {
             Image image = imageRepository.findByFileName(titleImageFileName);
             minioService.deleteThumbnail(post.getId() + "-" + prevThumbnailFileName);
             minioService.createThumbnail(post.getId() + "-" + titleImageFileName, image.getContentType());
@@ -144,7 +155,8 @@ public class ImageService {
 
     public void validateImage(MultipartFile file) {
         if (file.isEmpty()) throw new IllegalArgumentException("file is empty");
-        if (!Objects.requireNonNull(file.getContentType()).startsWith("image/")) throw new IllegalArgumentException("file is not image");
+        if (!Objects.requireNonNull(file.getContentType()).startsWith("image/"))
+            throw new IllegalArgumentException("file is not image");
     }
 
     public String createImage(MultipartFile file) {
@@ -154,7 +166,38 @@ public class ImageService {
         return minioPublicUrl + "/" + url;
     }
 
-    public String getPresignedUrl2(String fileName) {
-        return minioService.getPresignedUrl2(fileName);
+    public String getSrcUrl(String fileName) {
+        Image image = imageRepository.findByFileName(fileName);
+        if (image == null) {
+            String srcUrl = minioService.getSrcUrl(fileName);
+            imageRepository.save(new Image(
+                    fileName,
+                    "unknown",
+                    srcUrl,
+                    ZonedDateTime.now().plusHours(167)
+            ));
+            return srcUrl;
+        }
+        return image.getUrl();
+    }
+
+    private void applyPresignedUrlToImageSrcRecursive(JsonNode node) {
+        if (node.isObject()) {
+            ObjectNode objNode = (ObjectNode) node;
+            JsonNode typeNode = objNode.get("type");
+            if (typeNode != null && typeNode.isTextual() && "image".equals(typeNode.asText())) {
+                if (objNode.has("altText") && objNode.has("src")) {
+                    String srcUrl = getSrcUrl(objNode.get("altText").asText());
+                    objNode.put("src", minioPublicUrl + "/" + srcUrl);
+                }
+            }
+            objNode.fieldNames().forEachRemaining(fieldName -> {
+                applyPresignedUrlToImageSrcRecursive(objNode.get(fieldName));
+            });
+        } else if (node.isArray()) {
+            for (JsonNode element : node) {
+                applyPresignedUrlToImageSrcRecursive(element);
+            }
+        }
     }
 }

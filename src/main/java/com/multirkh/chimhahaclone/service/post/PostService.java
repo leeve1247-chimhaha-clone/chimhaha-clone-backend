@@ -15,6 +15,7 @@ import com.multirkh.chimhahaclone.repository.CommentRepository;
 import com.multirkh.chimhahaclone.repository.PostLikesUserRepository;
 import com.multirkh.chimhahaclone.repository.PostRepository;
 import com.multirkh.chimhahaclone.repository.UserRepository;
+import com.multirkh.chimhahaclone.service.image.ImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,7 @@ public class PostService {
     private final UserRepository userRepository;
     private final PostLikesUserRepository postLikesUserRepository;
     private final PostCategoryRepository postCategoryRepository;
+    private final ImageService imageService;
 
     public Post createPost(PostReceived request) {
         String user_auth_id = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -83,10 +85,11 @@ public class PostService {
 //        if (request.getTitleImageFileName() == null) throw new IllegalArgumentException("titleImageFileName is null");
     }
 
-    public PostDetailDto findPost(Long listNum) {
-        Post postEntity = postRepository.findById(listNum).orElseThrow(() -> new IllegalArgumentException("post not found"));
+    public PostDetailDto findPost(Long postNum) {
+        Post postEntity = postRepository.findById(postNum).orElseThrow(() -> new IllegalArgumentException("post not found"));
         if (postEntity.getStatus() == PostStatus.DELETED) throw new FindDeletedPostException();
-        return new PostDetailDto(postEntity);
+        JsonNode appliedPresignedUrlToImageSrcContent = imageService.applyPresignedUrlToImageSrc(postEntity.getJsonContent());
+        return new PostDetailDto(postEntity, appliedPresignedUrlToImageSrcContent);
     }
 
     public List<PostListComponentDto> findPostList() {
@@ -96,6 +99,16 @@ public class PostService {
                 .filter(post -> post
                         .getStatus() == PostStatus.POSTED
                 )
+                .map(PostListComponentDto::new)
+                .toList();
+    }
+
+
+    public List<PostListComponentDto> findPostList(String category) {
+        return postRepository
+                .findAllByOrderByCreatedDateWhere(category)
+                .stream()
+                .filter(post -> post.getStatus() == PostStatus.POSTED)
                 .map(PostListComponentDto::new)
                 .toList();
     }
@@ -141,4 +154,6 @@ public class PostService {
             return post.getLikes();
         }
     }
+
+
 }
