@@ -3,6 +3,7 @@ package com.multirkh.chimhahaclone.service.user;
 import com.multirkh.chimhahaclone.entity.User;
 import com.multirkh.chimhahaclone.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,5 +19,10 @@ public class UserService {
             userRepository.save(user);
         }
         return user.getUserName();
+    }
+
+    public User getUser() {
+        String user_auth_id = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByUserAuthId(user_auth_id);
     }
 }

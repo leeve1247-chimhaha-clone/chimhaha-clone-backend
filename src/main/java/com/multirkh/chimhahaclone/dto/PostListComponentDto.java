@@ -17,7 +17,7 @@ public class PostListComponentDto {
     private final String category;
     private final Integer likes;
     private final Integer postId;
-    private final String titleImageId;
+    private final String titleImageFileName;
     private final Integer commentsCount;
 
     public PostListComponentDto(Post post){
@@ -29,7 +29,11 @@ public class PostListComponentDto {
         this.category = post.getCategory().getKey();
         this.likes = post.getLikes();
         this.postId = post.getId().intValue();
-        this.titleImageId = post.getTitleImageFileName();
+        if (post.getThumbNailImage() != null) {
+            this.titleImageFileName = post.getThumbNailImage().getRawImage().getFileName();
+        } else {
+            this.titleImageFileName = null;
+        }
         this.commentsCount = post.getCommentsCount();
     }
 }

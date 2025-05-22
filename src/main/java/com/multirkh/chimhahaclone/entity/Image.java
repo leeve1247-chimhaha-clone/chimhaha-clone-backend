@@ -16,6 +16,9 @@ import java.util.Set;
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 @Getter
+@Table(
+        name = "image"
+)
 public class Image {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,12 +35,16 @@ public class Image {
     @Setter
     private ZonedDateTime expirationDate;
 
-    public Image(String fileName, String contentType, String url, ZonedDateTime expirationDate) {
-        this.fileName = fileName;
-        this.contentType = contentType;
-        this.url = url;
-        this.expirationDate = expirationDate;
-    }
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "raw_image_id")
+    private Image rawImage;
+
+    @Setter
+    @OneToOne(mappedBy = "rawImage", cascade = CascadeType.ALL, orphanRemoval = true )
+    private Image thumbNailImage;
+
+    @OneToMany(mappedBy = "thumbNailImage", cascade = CascadeType.ALL)
+    private final Set<Post> thumbNailedPost = new HashSet<>();
 
     @OneToMany(mappedBy = "image", cascade = CascadeType.ALL)
     private final Set<PostImage> postImages = new HashSet<>();
@@ -47,4 +54,20 @@ public class Image {
 
     @LastModifiedDate
     private ZonedDateTime editedDate;
+
+
+    public Image(String fileName, String contentType, String url, ZonedDateTime expirationDate) {
+        this.fileName = fileName;
+        this.contentType = contentType;
+        this.url = url;
+        this.expirationDate = expirationDate;
+    }
+
+    public Image(Image rawImage, String url, ZonedDateTime expirationDate) {
+        this.fileName = "";
+        this.rawImage = rawImage;
+        this.contentType = rawImage.getContentType();
+        this.url = url;
+        this.expirationDate = expirationDate;
+    }
 }

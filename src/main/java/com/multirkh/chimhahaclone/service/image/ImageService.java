@@ -2,15 +2,13 @@ package com.multirkh.chimhahaclone.service.image;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.multirkh.chimhahaclone.dto.PostReceived;
 import com.multirkh.chimhahaclone.entity.Image;
-import com.multirkh.chimhahaclone.entity.enums.ImageStatus;
 import com.multirkh.chimhahaclone.entity.Post;
 import com.multirkh.chimhahaclone.entity.PostImage;
 import com.multirkh.chimhahaclone.minio.MinioService;
 import com.multirkh.chimhahaclone.repository.ImageRepository;
-import com.multirkh.chimhahaclone.repository.PostImageRepository;
 import com.multirkh.chimhahaclone.util.IdGenerator;
-import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,12 +16,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.ZonedDateTime;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -35,7 +31,6 @@ import java.util.stream.Collectors;
 public class ImageService {
 
     private final ImageRepository imageRepository;
-    private final PostImageRepository postImageRepository;
     private final MinioService minioService;
     @Value("${minio.export-url}")
     private String minioPublicUrl;
@@ -54,95 +49,48 @@ public class ImageService {
         return new PresignedUrlDTO(minioService.getPresignedUrl(randomImageName), randomImageName);
     }
 
-    public Set<String> getImageUrls(JsonNode jsonContent) {
-        Set<String> imageUrls = new HashSet<>();
-        jsonContent.findValues("image").forEach(image -> imageUrls.add(image.asText().split("preview=true&prefix=")[1]));
-        return imageUrls;
+    public Set<String> getImageFileNameSet(JsonNode jsonContent) {
+        return jsonContent.findParents("type").stream().filter(jsonNode -> jsonNode.get("type").asText().equals("image")).map(jsonNode -> jsonNode.get("altText").asText()).collect(Collectors.toSet());
     }
 
     public void createPostImages(Post post) {
-        Set<String> imageUrls = getImageUrls(post.getJsonContent());
-        if (imageUrls.isEmpty()) return;
-
-        Set<PostImage> postImages = new HashSet<>();
-        Set<Image> images = imageRepository.findByFileNames(imageUrls);
-        for (Image image : images) {
-            PostImage postImage = new PostImage(post, image, ImageStatus.POSTED);
-            postImages.add(postImage);
-            if (image.getFileName().equals(post.getTitleImageFileName())) {
-                postImage.setMainImage(true);
-                // minio 이미지 thumbnail 생성
-                minioService.createThumbnail(post.getId() + "-" + image.getFileName(), image.getContentType());
-            }
-        }
-        post.getPostImages().addAll(postImages);
+        Set<String> imageFileNameSet = getImageFileNameSet(post.getJsonContent());
+        if (imageFileNameSet.isEmpty()) return;
+        Set<Image> images = imageRepository.findByFileNames(imageFileNameSet);
+        post.addPostImages(images);
     }
 
-    public void updatePostImage(Post post, JsonNode jsonContent, @Nullable String titleImageFileName) {
-        Set<PostImage> postImages = postImageRepository.findByPost(post);
-        Set<String> newImageUrls = getImageUrls(jsonContent);
+    public void updatePostImage(Post post, PostReceived request) {
+        Set<PostImage> postImages = post.getPostImages();
+        Set<String> prevImageFileNameSet = postImages.stream().map(postImage -> postImage.getImage().getFileName()).collect(Collectors.toSet());
+        Set<String> updatedImageFileNameSet = getImageFileNameSet(request.getContent());
 
-        // 썸네일 이미지 처리
-        String prevThumbnailFileName = post.getTitleImageFileName();
-        if (prevThumbnailFileName == null && titleImageFileName != null) {
-            Image image = imageRepository.findByFileName(titleImageFileName);
-            minioService.createThumbnail(post.getId() + "-" + titleImageFileName, image.getContentType());
-        } else if (prevThumbnailFileName != null && titleImageFileName == null) {
-            minioService.deleteThumbnail(post.getId() + "-" + prevThumbnailFileName);
-        } else if (prevThumbnailFileName != null && !prevThumbnailFileName.equals(titleImageFileName)) {
-            Image image = imageRepository.findByFileName(titleImageFileName);
-            minioService.deleteThumbnail(post.getId() + "-" + prevThumbnailFileName);
-            minioService.createThumbnail(post.getId() + "-" + titleImageFileName, image.getContentType());
-        }
+        Set<String> newImageNames = new HashSet<>(updatedImageFileNameSet);
+        newImageNames.removeAll(prevImageFileNameSet);
 
-        Set<PostImage> deletedPostImages = new HashSet<>();
-        Set<Image> deletedImages = new HashSet<>();
-        postImages.forEach(postImage -> {
-            Image image = postImage.getImage();
-            if (!newImageUrls.contains(image.getFileName())) {
-                Set<PostImage> postImagesOfImage = image.getPostImages();
-                postImagesOfImage.remove(postImage);
-                if (postImagesOfImage.isEmpty()) {
-                    //minio 이미지 삭제
-                    minioService.deleteImage(image.getFileName());
-                    deletedImages.add(image);
-                }
-                deletedPostImages.add(postImage);
-            } else {
-                postImage.setStatus(ImageStatus.POSTED);
-                newImageUrls.remove(image.getFileName());
-            }
-        });
+        Set<Image> newImages = imageRepository.findByFileNames(newImageNames);
+        post.addPostImages(newImages);
 
-        postImageRepository.deleteAllByPostImages(deletedPostImages);
-        imageRepository.deleteAllByImages(deletedImages);
+        Set<String> toBeDeleteImageNames = new HashSet<>(prevImageFileNameSet);
+        toBeDeleteImageNames.removeAll(updatedImageFileNameSet);
 
-        postImages.removeAll(deletedPostImages);
-        Set<Image> images = imageRepository.findByFileNames(newImageUrls);
-        for (Image image : images) {
-            PostImage postImage = new PostImage(post, image, ImageStatus.POSTED);
-            postImages.add(postImage);
+        Set<Image> toBeDeleteImages = imageRepository.findByFileNames(toBeDeleteImageNames);
+        post.removePostImages(toBeDeleteImages);
+        for (Image image: toBeDeleteImages){
+            if (!image.getPostImages().isEmpty()) continue;
+            minioService.deleteImage(image.getFileName());
+            imageRepository.delete(image);
         }
     }
 
     public void deletePostImage(Post post) {
-        Set<PostImage> postImages = postImageRepository.findByPost(post);
-        String titleImageFileName = post.getTitleImageFileName();
-        if (titleImageFileName != null) {
-            minioService.deleteThumbnail(post.getId() + "-" + titleImageFileName);
+        Set<Image> toBeDeleteImages = post.getPostImages().stream().map(PostImage::getImage).collect(Collectors.toSet());
+        post.removePostImages(toBeDeleteImages);
+        for (Image image: toBeDeleteImages){
+            if (!image.getPostImages().isEmpty()) continue;
+            minioService.deleteImage(image.getFileName());
+            imageRepository.delete(image);
         }
-        Set<Image> deletedImages = new HashSet<>();
-        postImages.forEach(postImage -> {
-            Image image = postImage.getImage();
-            Set<PostImage> postImagesOfImage = image.getPostImages();
-            postImagesOfImage.remove(postImage);
-            if (postImagesOfImage.isEmpty()) {
-                //minio 이미지 삭제
-                deletedImages.add(image);
-            }
-        });
-        imageRepository.deleteAllByImages(deletedImages);
-        minioService.deleteImages(deletedImages.stream().map(Image::getFileName).collect(Collectors.toSet()));
     }
 
     @Scheduled(fixedRate = 1000 * 60 * 15) // 15분마다 실행
@@ -153,30 +101,22 @@ public class ImageService {
         imageRepository.deleteAllByImages(imagesEditedBefore);
     }
 
-    public void validateImage(MultipartFile file) {
-        if (file.isEmpty()) throw new IllegalArgumentException("file is empty");
-        if (!Objects.requireNonNull(file.getContentType()).startsWith("image/"))
-            throw new IllegalArgumentException("file is not image");
-    }
-
-    public String createImage(MultipartFile file) {
-        String randomImageName = minioService.postFileWithRandomFileName(file);
-        String url = minioService.getOrCreateUrl(randomImageName);
-        imageRepository.save(new Image(randomImageName, file.getContentType(), url, ZonedDateTime.now().plusHours(167)));
-        return minioPublicUrl + "/" + url;
-    }
-
     public String getSrcUrl(String fileName) {
         Image image = imageRepository.findByFileName(fileName);
         if (image == null) {
-            String srcUrl = minioService.getSrcUrl(fileName);
+            String srcUrl = minioService.createOrRenewUrl(fileName);
+            String contentType = minioService.getType(fileName);
             imageRepository.save(new Image(
                     fileName,
-                    "unknown",
+                    contentType,
                     srcUrl,
                     ZonedDateTime.now().plusHours(167)
             ));
             return srcUrl;
+        }
+        if (image.getExpirationDate().isBefore(ZonedDateTime.now().plusHours(1))) {
+            String srcUrl = minioService.createOrRenewUrl(fileName);
+            image.setUrl(srcUrl);
         }
         return image.getUrl();
     }
@@ -198,6 +138,91 @@ public class ImageService {
             for (JsonNode element : node) {
                 applyPresignedUrlToImageSrcRecursive(element);
             }
+        }
+    }
+
+    private String getTitleImageFileName(JsonNode content) {
+        Optional<String> first = content.findParents("type").stream().filter(t -> t.get("type").asText().equals("image")).map(t -> t.get("altText").asText()).findFirst();
+        return first.orElse(null);
+    }
+
+    public String getThumbnailSrcUrl(String fileName) {
+        Image rawImage = imageRepository.findByFileName(fileName);
+        Image thumbNailImage = getOrCreateThumbnail(rawImage);
+        if (thumbNailImage.getExpirationDate().isBefore(ZonedDateTime.now().plusHours(1))) {
+            String renewedUrl = minioService.createOrRenewUrl(fileName);
+            thumbNailImage.setUrl(renewedUrl);
+        }
+        return thumbNailImage.getUrl();
+    }
+
+    public Image getOrCreateThumbnail(Image rawImage) {
+        if (rawImage.getThumbNailImage() != null) return rawImage.getThumbNailImage();
+        String srcUrl =  minioService.createThumbnail(rawImage.getFileName());
+        Image thumbNailImage = new Image(rawImage, srcUrl, ZonedDateTime.now().plusHours(167));
+        rawImage.setThumbNailImage(thumbNailImage);
+        return imageRepository.save(thumbNailImage);
+    }
+
+    public void createThumbnailImage(Post post) {
+        String titleImageFileName = getTitleImageFileName(post.getJsonContent());
+        if (titleImageFileName == null) return;
+        Image rawImage = imageRepository.findByFileName(titleImageFileName);
+        Image thumbnailImage = getOrCreateThumbnail(rawImage);
+        thumbnailImage.getThumbNailedPost().add(post);
+        post.setThumbNailImage(thumbnailImage);
+    }
+
+    public void updateThumbnailImage(Post post, PostReceived request) {
+        String titleImageFileName = getTitleImageFileName(request.getContent());
+        Image prevThumbNailImage = post.getThumbNailImage();
+
+        // Exist -> Null
+        if (prevThumbNailImage != null && titleImageFileName == null) {
+            prevThumbNailImage.getThumbNailedPost().remove(post);
+            if (prevThumbNailImage.getThumbNailedPost().isEmpty()) {
+                minioService.deleteThumbnail(prevThumbNailImage.getRawImage().getFileName());
+                imageRepository.delete(prevThumbNailImage);
+            };
+            return;
+        }
+
+
+        // Same (null)
+        if (prevThumbNailImage == null && titleImageFileName == null){
+            return;
+        }
+
+        // Null -> Exist
+        Image updatedThumbNailImage = imageRepository.findByFileName(titleImageFileName);
+        if (prevThumbNailImage == null) {
+            Image thumbnailImage = getOrCreateThumbnail(updatedThumbNailImage);
+            thumbnailImage.getThumbNailedPost().add(post);
+            post.setThumbNailImage(thumbnailImage);
+            return;
+        }
+
+        // Same (not null)
+        if (prevThumbNailImage.equals(updatedThumbNailImage)) {
+            return;
+        }
+
+        // Changed
+        prevThumbNailImage.getThumbNailedPost().remove(post);
+        if (prevThumbNailImage.getThumbNailedPost().isEmpty()) {
+            minioService.deleteThumbnail(prevThumbNailImage.getRawImage().getFileName());
+            imageRepository.delete(prevThumbNailImage);
+        }
+        updatedThumbNailImage.getThumbNailedPost().add(post);
+        post.setThumbNailImage(updatedThumbNailImage);
+    }
+
+    public void deleteThumbnailImage(Post post){
+        Image thumbNailImage = post.getThumbNailImage();
+        thumbNailImage.getThumbNailedPost().remove(post);
+        if (thumbNailImage.getThumbNailedPost().isEmpty()) {
+            minioService.deleteThumbnail(thumbNailImage.getRawImage().getFileName());
+            imageRepository.delete(thumbNailImage);
         }
     }
 }

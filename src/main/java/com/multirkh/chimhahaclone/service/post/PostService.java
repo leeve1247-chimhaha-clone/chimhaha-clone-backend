@@ -2,20 +2,16 @@ package com.multirkh.chimhahaclone.service.post;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.multirkh.chimhahaclone.category.entity.PostCategory;
+import com.multirkh.chimhahaclone.category.repository.PostCategoryRepository;
 import com.multirkh.chimhahaclone.dto.PostDetailDto;
 import com.multirkh.chimhahaclone.dto.PostListComponentDto;
 import com.multirkh.chimhahaclone.dto.PostReceived;
-import com.multirkh.chimhahaclone.entity.Post;
-import com.multirkh.chimhahaclone.entity.PostLikesUser;
+import com.multirkh.chimhahaclone.entity.*;
 import com.multirkh.chimhahaclone.entity.enums.PostStatus;
-import com.multirkh.chimhahaclone.entity.User;
 import com.multirkh.chimhahaclone.exception.FindDeletedPostException;
-import com.multirkh.chimhahaclone.category.repository.PostCategoryRepository;
-import com.multirkh.chimhahaclone.repository.CommentRepository;
-import com.multirkh.chimhahaclone.repository.PostLikesUserRepository;
-import com.multirkh.chimhahaclone.repository.PostRepository;
-import com.multirkh.chimhahaclone.repository.UserRepository;
+import com.multirkh.chimhahaclone.repository.*;
 import com.multirkh.chimhahaclone.service.image.ImageService;
+import com.multirkh.chimhahaclone.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -32,30 +28,42 @@ public class PostService {
     private final PostLikesUserRepository postLikesUserRepository;
     private final PostCategoryRepository postCategoryRepository;
     private final ImageService imageService;
+    private final UserService userService;
 
-    public Post createPost(PostReceived request) {
-        String user_auth_id = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByUserAuthId(user_auth_id);
+    public String createPost(PostReceived request) {
+        User user = userService.getUser();
+        String title = request.getTitle();
         PostCategory postCategory = postCategoryRepository.findByKey(request.getPostCategoryKey());
         JsonNode jsonContent = request.getContent();
-        String titleImageFileName = request.getTitleImageFileName();
-        String title = request.getTitle();
-        return postRepository.save(new Post(title, jsonContent, user, postCategory, titleImageFileName));
+
+        Post post = postRepository.save(new Post(title, jsonContent, user, postCategory));
+
+        imageService.createPostImages(post);
+        imageService.createThumbnailImage(post);
+
+        return post.getId().toString();
     }
 
-    public String updatePost(Post post, PostReceived request) {
+    public String updatePost(PostReceived request) {
+        Post post = postRepository.findById(Long.valueOf(request.getPostId())).orElseThrow();
         post.setTitle(request.getTitle());
-        post.setJsonContent(request.getContent());
         post.setCategory(postCategoryRepository.findByKey(request.getPostCategoryKey()));
-        post.setTitleImageFileName(request.getTitleImageFileName());
-        Post savedPost = postRepository.save(post);
-        return savedPost.getId().toString();
+        post.setJsonContent(request.getContent());
+        Post updatedPost = postRepository.save(post); //postImage not yet updated
+
+        imageService.updatePostImage(updatedPost, request);
+        imageService.updateThumbnailImage(updatedPost, request);
+
+        return updatedPost.getId().toString();
     }
 
     public String deletePost(Post post) {
         post.setJsonContent(null);
         post.setStatus(PostStatus.DELETED);
         Post savedPost = postRepository.save(post);
+
+        imageService.deletePostImage(savedPost);
+        imageService.deleteThumbnailImage(savedPost);
         return savedPost.getId().toString();
     }
 
@@ -66,7 +74,8 @@ public class PostService {
     public Post validateUpdatePost(PostReceived request) {
         String user_auth_id = SecurityContextHolder.getContext().getAuthentication().getName();
         Post post = postRepository.findById(Long.valueOf(request.getPostId())).orElseThrow(() -> new IllegalArgumentException("post not found"));
-        if (!post.getUser().getUserAuthId().equals(user_auth_id)) throw new IllegalArgumentException("user is not matched");
+        if (!post.getUser().getUserAuthId().equals(user_auth_id))
+            throw new IllegalArgumentException("user is not matched");
         validatePostForm(request);
         return post;
     }
@@ -74,7 +83,8 @@ public class PostService {
     public Post validateDeletePost(PostReceived request) {
         String user_auth_id = SecurityContextHolder.getContext().getAuthentication().getName();
         Post post = postRepository.findById(Long.valueOf(request.getPostId())).orElseThrow(() -> new IllegalArgumentException("post not found"));
-        if (!post.getUser().getUserAuthId().equals(user_auth_id)) throw new IllegalArgumentException("user is not matched");
+        if (!post.getUser().getUserAuthId().equals(user_auth_id))
+            throw new IllegalArgumentException("user is not matched");
         return post;
     }
 
