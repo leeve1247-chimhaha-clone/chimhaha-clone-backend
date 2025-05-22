@@ -40,7 +40,7 @@ public class PostController {
 
     @GetMapping("/posts")
     public List<PostListComponentDto> getPosts(@RequestParam(name="category", required = false) String category) {
-        if (category == null){return postService.findPostList();}
+        if (category == null || category.equals("ALL")){return postService.findPostList();}
         return postService.findPostList(category);
     }
 
@@ -59,9 +59,7 @@ public class PostController {
             System.out.println("Authority: " + authority.getAuthority());
         }
         postService.validateCreatePost(request);
-        Post post = postService.createPost(request);
-        imageService.createPostImages(post);
-        return post.getId().toString();
+        return postService.createPost(request);
     }
 
     @PostMapping("/update")
@@ -69,9 +67,8 @@ public class PostController {
     public String updatePost(
             @RequestBody PostReceived request
     ) {
-        Post post = postService.validateUpdatePost(request);
-        imageService.updatePostImage(post, request.getContent(), request.getTitleImageFileName());
-        return postService.updatePost(post, request);
+        postService.validateUpdatePost(request);
+        return postService.updatePost(request);
     }
 
     @PostMapping("/delete")
@@ -79,9 +76,7 @@ public class PostController {
     public String deletePost(
             @RequestBody PostReceived request
     ) {
-
         Post post = postService.validateDeletePost(request);
-        imageService.deletePostImage(post);
         return postService.deletePost(post);
     }
 

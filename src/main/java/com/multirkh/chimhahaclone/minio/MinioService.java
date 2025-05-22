@@ -1,21 +1,16 @@
 package com.multirkh.chimhahaclone.minio;
 
-import com.multirkh.chimhahaclone.entity.Image;
 import com.multirkh.chimhahaclone.repository.ImageRepository;
 import com.multirkh.chimhahaclone.service.image.resize.ImageResizerService;
-import com.multirkh.chimhahaclone.service.image.resize.InputStreamAndLength;
-import com.multirkh.chimhahaclone.util.IdGenerator;
 import io.minio.*;
 import io.minio.http.Method;
 import io.minio.messages.DeleteError;
 import io.minio.messages.DeleteObject;
 import lombok.RequiredArgsConstructor;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.InputStream;
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -27,10 +22,7 @@ public class MinioService {
     private String minioBucketName;
     @Value("${minio.thumbnail-bucket-name}")
     private String thumbnailBucketName;
-
     private final MinioClient minioClient;
-
-    private final ImageRepository imageRepository;
 
     public String getPresignedUrl(String randomImageName) {
         try {
@@ -42,41 +34,6 @@ public class MinioService {
                                     .object(randomImageName)
                                     .expiry(15, TimeUnit.MINUTES)
                                     .build()).replace("http://minio-container:9000/","");
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public String postFileWithRandomFileName(@NotNull MultipartFile file) {
-        String randomImageName = IdGenerator.generateUniqueId();
-        String randomImageFileName = randomImageName + "." + Objects.requireNonNull(file.getContentType()).split("/")[1];
-        try {
-            minioClient.putObject(
-                    PutObjectArgs.builder().bucket(minioBucketName).object(
-                                    randomImageFileName
-                            ).stream(file.getInputStream(), file.getSize(), -1)
-                            .contentType(file.getContentType())
-                            .build());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        return randomImageFileName;
-    }
-
-    public String getOrCreateUrl(String randomImageFileName) {
-        Image image = imageRepository.findByFileName(randomImageFileName);
-        if (image != null) {
-            return image.getUrl();
-        }
-        try {
-            return minioClient
-                    .getPresignedObjectUrl(
-                    GetPresignedObjectUrlArgs.builder()
-                            .method(Method.GET)
-                            .bucket(minioBucketName)
-                            .object(randomImageFileName)
-                            .expiry(7, TimeUnit.DAYS)
-                            .build()).replace("http://minio-container:9000/","");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -125,34 +82,37 @@ public class MinioService {
         }
     }
 
-    public void createThumbnail(String postIdAndFileName, String contentType) {
+    public String createThumbnail(String fileName) {
         try {
-            InputStream inputStream = getImage(postIdAndFileName.split("-")[1]);
-            InputStreamAndLength isL = imageResizerService.resizeImage(inputStream, contentType);
+            String mimeType = getType(fileName);
+            InputStream rawImage = getImage(fileName);
+            InputStream resizedImageInputStream = imageResizerService.createResizedImage(rawImage);
             minioClient.putObject(
                     PutObjectArgs.builder()
                             .bucket(thumbnailBucketName)
-                            .object(postIdAndFileName)
-                            .stream(isL.inputStream(), isL.size(), -1)
+                            .object(fileName)
+                            .stream(resizedImageInputStream, -1, 10485760)
+                            .contentType(mimeType)
                             .build());
+            return createOrRenewThumbNailUrl(fileName);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void deleteThumbnail(String postIdAndFileName) {
+    public void deleteThumbnail(String fileName) {
         try{
             minioClient.removeObject(
                     RemoveObjectArgs.builder()
                             .bucket(thumbnailBucketName)
-                            .object(postIdAndFileName)
+                            .object(fileName)
                             .build());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    public String getSrcUrl(String fileName) {
+    public String createOrRenewUrl(String fileName) {
         try {
             return minioClient
                     .getPresignedObjectUrl(
@@ -162,6 +122,36 @@ public class MinioService {
                                     .object(fileName)
                                     .expiry(7, TimeUnit.DAYS)
                                     .build()).replace("http://minio-container:9000/","");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String createOrRenewThumbNailUrl(String fileName){
+        try {
+            return minioClient
+                    .getPresignedObjectUrl(
+                            GetPresignedObjectUrlArgs.builder()
+                                    .method(Method.GET)
+                                    .bucket(thumbnailBucketName)
+                                    .object(fileName)
+                                    .expiry(7, TimeUnit.DAYS)
+                                    .build()).replace("http://minio-container:9000/","");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String getType(String fileName){
+        try{
+            StatObjectResponse statObjectResponse = minioClient
+                    .statObject(StatObjectArgs
+                            .builder()
+                            .bucket(minioBucketName)
+                            .object(fileName)
+                            .build()
+                    );
+            return statObjectResponse.contentType();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

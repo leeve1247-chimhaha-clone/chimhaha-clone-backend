@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -54,6 +55,11 @@ public class Post {
     private String titleImageFileName;
 
     @Setter
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "thumb_nail_image_id")
+    private Image thumbNailImage;
+
+    @Setter
     private Integer commentsCount;
 
     @Setter
@@ -77,9 +83,8 @@ public class Post {
 
     @Setter
     private Integer likes;
-
     //신규 생성
-    public Post(String title, JsonNode jsonContent, User user, PostCategory postCategory, String titleImageFileName) {
+    public Post(String title, JsonNode jsonContent, User user, PostCategory postCategory, Image thumbNailImage) {
         this.title = title;
         this.jsonContent = jsonContent;
         this.user = user;
@@ -87,7 +92,7 @@ public class Post {
         this.likes = 0;
         this.category = postCategory;
         this.status = PostStatus.POSTED;
-        this.titleImageFileName = titleImageFileName;
+        this.setThumbNailImage(thumbNailImage);
         this.commentsCount = 0;
     }
 
@@ -101,5 +106,31 @@ public class Post {
         this.category = postCategory;
         this.status = PostStatus.POSTED;
         this.commentsCount = 0;
+    }
+
+    public void addPostImage(Image image) {
+        PostImage postImage = new PostImage(this, image);
+        this.postImages.add(postImage);
+        image.getPostImages().add(postImage);
+    }
+
+    public void addPostImages(Set<Image> images){
+        for (Image image : images){
+            addPostImage(image);
+        }
+    }
+
+    public void removePostImage(Image image) {
+        Set<PostImage> postImage = this.postImages.stream().filter(p -> p.getImage().equals(image)).collect(Collectors.toSet());
+        image.getPostImages().removeAll(postImage);
+        this.postImages.removeAll(postImage);
+    }
+
+    public void removePostImages(Set<Image> images) {
+        Set<PostImage> toBeRemovedPostImages = this.postImages.stream().filter(p -> images.contains(p.getImage())).collect(Collectors.toSet());
+        for (Image image : images){
+            image.getPostImages().removeAll(toBeRemovedPostImages);
+        }
+        this.postImages.removeAll(toBeRemovedPostImages);
     }
 }

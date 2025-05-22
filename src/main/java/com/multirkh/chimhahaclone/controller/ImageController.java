@@ -16,13 +16,6 @@ public class ImageController {
     private final ImageService imageService;
 
     @RolesAllowed("USER")
-    @PostMapping("/upload/image")
-    public String uploadFile(@RequestParam("file") MultipartFile file) {
-        imageService.validateImage(file);
-        return imageService.createImage(file);
-    }
-
-    @RolesAllowed("USER")
     @GetMapping("/get/presigned-url")
     public PresignedUrlDTO getPresignedUrl() {
         return imageService.getPresignedUrl();
@@ -31,5 +24,10 @@ public class ImageController {
     @GetMapping("/get/src-url")
     public String getSrcUrl(@RequestParam("filename") String fileName ){
         return imageService.getSrcUrl(fileName);
+    }
+
+    @GetMapping("/get/thumbnail-src-url")
+    public String getThumbnailSrcUrl(@RequestParam("filename") String fileName ) {
+        return imageService.getThumbnailSrcUrl(fileName);
     }
 }

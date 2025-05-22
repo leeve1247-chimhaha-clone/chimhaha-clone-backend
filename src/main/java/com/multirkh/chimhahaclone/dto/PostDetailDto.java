@@ -1,6 +1,6 @@
-// src/main/java/com/multirkh/chimhahaclone/dto/PostListComponentDto.java
 package com.multirkh.chimhahaclone.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.multirkh.chimhahaclone.entity.Post;
 import com.multirkh.chimhahaclone.entity.enums.PostStatus;
@@ -22,20 +22,6 @@ public class PostDetailDto {
     private final JsonNode content;
     private final List<CommentDto> comments;
     private final String userAuthId;
-
-    public PostDetailDto(Post post){
-        this.title = post.getTitle();
-        this.username = post.getUser().getUserName();
-        this.status = post.getStatus();
-        this.createdDate = post.getCreatedDate();
-        this.views = post.getViews();
-        this.category = post.getCategory().getKey();
-        this.likes = post.getLikes();
-        this.postId = post.getId().intValue();
-        this.content = post.getJsonContent();
-        this.comments = post.getComments().stream().filter(comment -> comment.getParent() == null).map(CommentDto::new).toList();
-        this.userAuthId = post.getUser().getUserAuthId();
-    }
 
     public PostDetailDto(Post post, JsonNode content){
         this.title = post.getTitle();

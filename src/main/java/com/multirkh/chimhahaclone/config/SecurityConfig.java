@@ -43,6 +43,8 @@ public class SecurityConfig {
                         .requestMatchers("/post-categories").permitAll()
                         .requestMatchers("/post-categories/*").permitAll()
                         .requestMatchers("/get/src-url").permitAll()
+                        .requestMatchers("/get/thumbnail-src-url").permitAll()
+                        .requestMatchers("/get/thumbnail-src-url/*").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exceptions -> exceptions
