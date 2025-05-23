@@ -38,8 +38,8 @@ public class PostService {
 
         Post post = postRepository.save(new Post(title, jsonContent, user, postCategory));
 
-        imageService.createPostImages(post);
         imageService.createThumbnailImage(post);
+        imageService.createPostImages(post);
 
         return post.getId().toString();
     }
@@ -51,8 +51,8 @@ public class PostService {
         post.setJsonContent(request.getContent());
         Post updatedPost = postRepository.save(post); //postImage not yet updated
 
-        imageService.updatePostImage(updatedPost, request);
         imageService.updateThumbnailImage(updatedPost, request);
+        imageService.updatePostImage(updatedPost, request);
 
         return updatedPost.getId().toString();
     }
@@ -62,8 +62,9 @@ public class PostService {
         post.setStatus(PostStatus.DELETED);
         Post savedPost = postRepository.save(post);
 
-        imageService.deletePostImage(savedPost);
         imageService.deleteThumbnailImage(savedPost);
+        imageService.deletePostImage(savedPost);
+
         return savedPost.getId().toString();
     }
 

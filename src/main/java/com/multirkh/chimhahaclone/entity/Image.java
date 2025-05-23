@@ -36,11 +36,12 @@ public class Image {
     private ZonedDateTime expirationDate;
 
     @OneToOne(fetch = FetchType.LAZY)
+    @Setter
     @JoinColumn(name = "raw_image_id")
     private Image rawImage;
 
+    @OneToOne(mappedBy = "rawImage", cascade = CascadeType.ALL)
     @Setter
-    @OneToOne(mappedBy = "rawImage", cascade = CascadeType.ALL, orphanRemoval = true )
     private Image thumbNailImage;
 
     @OneToMany(mappedBy = "thumbNailImage", cascade = CascadeType.ALL)
