@@ -66,37 +66,26 @@ public class ImageService {
 
     @Transactional
     public void updatePostImage(@NotNull Post post, @NotNull PostReceived request) {
-        log.info("Updating post image");
         Set<PostImage> postImages = post.getPostImages();
         Set<String> prevImageFileNameSet = postImages.stream().map(postImage -> postImage.getImage().getFileName()).collect(Collectors.toSet());
         Set<String> updatedImageFileNameSet = getImageFileNameSet(request.getContent());
 
-        log.info("=================");
         Set<String> newImageNames = new HashSet<>(updatedImageFileNameSet);
         newImageNames.removeAll(prevImageFileNameSet);
 
-        log.info("======2===========");
         Set<Image> newImages = imageRepository.findByFileNames(newImageNames);
         post.addPostImages(newImages);
 
-        log.info("======23===========");
         Set<String> toBeDeleteImageNames = new HashSet<>(prevImageFileNameSet);
         toBeDeleteImageNames.removeAll(updatedImageFileNameSet);
 
-        log.info("======25===========");
         Set<Image> toBeDeleteImages = imageRepository.findByFileNames(toBeDeleteImageNames);
-        Set<PostImage> toBeDeletePostImages = post.getPostImages().stream().filter(postImage -> toBeDeleteImages.contains(postImage.getImage())).collect(Collectors.toSet());
-        postImageRepository.deleteAll(toBeDeletePostImages);
         post.removePostImages(toBeDeleteImages);
-        log.info("======26===========");
-        for (Image image: toBeDeleteImages){
-            log.info("======291===========");
+        for (Image image : toBeDeleteImages) {
             if (!image.getPostImages().isEmpty()) continue;
-            log.info("======292===========");
             minioService.deleteImage(image.getFileName());
             imageRepository.delete(image);
         }
-        log.info("======29===========");
     }
 
     @Transactional
@@ -105,7 +94,7 @@ public class ImageService {
         Set<PostImage> toBeDeletePostImages = post.getPostImages().stream().filter(postImage -> toBeDeleteImages.contains(postImage.getImage())).collect(Collectors.toSet());
         postImageRepository.deleteAll(toBeDeletePostImages);
         post.removePostImages(toBeDeleteImages);
-        for (Image image: toBeDeleteImages){
+        for (Image image : toBeDeleteImages) {
             if (!image.getPostImages().isEmpty()) continue;
             minioService.deleteImage(image.getFileName());
             imageRepository.delete(image);
@@ -177,7 +166,7 @@ public class ImageService {
 
     public Image getOrCreateThumbnail(Image rawImage) {
         if (rawImage.getThumbNailImage() != null) return rawImage.getThumbNailImage();
-        String srcUrl =  minioService.createThumbnail(rawImage.getFileName());
+        String srcUrl = minioService.createThumbnail(rawImage.getFileName());
         Image thumbNailImage = new Image(rawImage, srcUrl, ZonedDateTime.now().plusHours(167));
         rawImage.setThumbNailImage(thumbNailImage);
         return imageRepository.save(thumbNailImage);
@@ -189,8 +178,7 @@ public class ImageService {
         if (titleImageFileName == null) return;
         Image rawImage = imageRepository.findByFileName(titleImageFileName);
         Image thumbnailImage = getOrCreateThumbnail(rawImage);
-        thumbnailImage.getThumbNailedPost().add(post);
-        post.setThumbNailImage(thumbnailImage);
+        post.addThumbNailImage(thumbnailImage);
     }
 
     @Transactional
@@ -201,22 +189,18 @@ public class ImageService {
         // Exist -> Null
         if (prevThumbNailImage != null && titleImageFileName == null) {
             log.atInfo().log("ThumbNail image has deleted");
-            prevThumbNailImage.getThumbNailedPost().remove(post);
+            post.removeThumbNailImage();
             if (prevThumbNailImage.getThumbNailedPost().isEmpty()) {
-                if (prevThumbNailImage.getRawImage() != null) {
-                    minioService.deleteThumbnail(prevThumbNailImage.getRawImage().getFileName());
-                } else {
-                    log.atWarn().log("RawImage is null for image id: {}", prevThumbNailImage.getId());
-                }
-                post.setThumbNailImage(null);
+                minioService.deleteThumbnail(prevThumbNailImage.getRawImage().getFileName());
+                prevThumbNailImage.getRawImage().setThumbNailImage(null);
                 imageRepository.delete(prevThumbNailImage);
             }
             return;
-            }
+        }
 
 
         // Same (null)
-        if (prevThumbNailImage == null && titleImageFileName == null){
+        if (prevThumbNailImage == null && titleImageFileName == null) {
             log.atInfo().log("ThumbNail image is Same(null)");
             return;
         }
@@ -227,7 +211,7 @@ public class ImageService {
         if (prevThumbNailImage == null) {
             log.atInfo().log("ThumbNail image has created");
             thumbnailImage.getThumbNailedPost().add(post);
-            post.setThumbNailImage(thumbnailImage);
+            post.addThumbNailImage(thumbnailImage);
             return;
         }
 
@@ -238,34 +222,28 @@ public class ImageService {
         }
 
         // Changed
-        prevThumbNailImage.getThumbNailedPost().remove(post);
         log.atInfo().log("ThumbNail image has been Changed");
         log.atInfo().log("prevThumbNailImage's post is now " + String.valueOf(prevThumbNailImage.getThumbNailedPost().size()));
+        post.removeThumbNailImage();
         if (prevThumbNailImage.getThumbNailedPost().isEmpty()) {
             minioService.deleteThumbnail(prevThumbNailImage.getRawImage().getFileName());
-            post.setThumbNailImage(null);
+            prevThumbNailImage.getRawImage().setThumbNailImage(null);
             imageRepository.delete(prevThumbNailImage);
         }
         thumbnailImage.getThumbNailedPost().add(post);
-        post.setThumbNailImage(thumbnailImage);
+        post.addThumbNailImage(thumbnailImage);
     }
 
     @Transactional
-    public void deleteThumbnailImage(@NotNull Post post){
+    public void deleteThumbnailImage(@NotNull Post post) {
         Image thumbNailImage = post.getThumbNailImage();
-        thumbNailImage.getThumbNailedPost().remove(post);
+        if (thumbNailImage == null) return;
+        log.atInfo().log("ThumbNail image has deleted");
+        post.removeThumbNailImage();
         if (thumbNailImage.getThumbNailedPost().isEmpty()) {
-            log.atInfo().log("ThumbNail image has deleted");
-            thumbNailImage.getThumbNailedPost().remove(post);
-            if (thumbNailImage.getThumbNailedPost().isEmpty()) {
-                if (thumbNailImage.getRawImage() != null) {
-                    minioService.deleteThumbnail(thumbNailImage.getRawImage().getFileName());
-                } else {
-                    log.atWarn().log("RawImage is null for image id: {}", thumbNailImage.getId());
-                }
-                imageRepository.delete(thumbNailImage);
-            }
-            return;
+            minioService.deleteThumbnail(thumbNailImage.getRawImage().getFileName());
+            thumbNailImage.getRawImage().setThumbNailImage(null);
+            imageRepository.delete(thumbNailImage);
         }
     }
 }
