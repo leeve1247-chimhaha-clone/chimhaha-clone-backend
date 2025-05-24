@@ -54,7 +54,6 @@ public class Post {
     @Setter
     private String titleImageFileName;
 
-    @Setter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "thumb_nail_image_id")
     private Image thumbNailImage;
@@ -69,7 +68,7 @@ public class Post {
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private final List<Comment> comments = new ArrayList<>();
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private final Set<PostImage> postImages = new HashSet<>();
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -83,6 +82,7 @@ public class Post {
 
     @Setter
     private Integer likes;
+
     //신규 생성
     public Post(String title, JsonNode jsonContent, User user, PostCategory postCategory, Image thumbNailImage) {
         this.title = title;
@@ -92,7 +92,7 @@ public class Post {
         this.likes = 0;
         this.category = postCategory;
         this.status = PostStatus.POSTED;
-        this.setThumbNailImage(thumbNailImage);
+        this.addThumbNailImage(thumbNailImage);
         this.commentsCount = 0;
     }
 
@@ -114,8 +114,8 @@ public class Post {
         image.getPostImages().add(postImage);
     }
 
-    public void addPostImages(Set<Image> images){
-        for (Image image : images){
+    public void addPostImages(Set<Image> images) {
+        for (Image image : images) {
             addPostImage(image);
         }
     }
@@ -128,9 +128,18 @@ public class Post {
 
     public void removePostImages(Set<Image> images) {
         Set<PostImage> toBeRemovedPostImages = this.postImages.stream().filter(p -> images.contains(p.getImage())).collect(Collectors.toSet());
-        for (Image image : images){
-            image.getPostImages().removeAll(toBeRemovedPostImages);
-        }
         this.postImages.removeAll(toBeRemovedPostImages);
+    }
+
+    public void addThumbNailImage(Image thumbNailImage) {
+        this.thumbNailImage = thumbNailImage;
+        if (thumbNailImage != null) {
+            thumbNailImage.getThumbNailedPost().add(this);
+        }
+    }
+
+    public void removeThumbNailImage() {
+        thumbNailImage.getThumbNailedPost().remove(this);
+        this.thumbNailImage = null;
     }
 }
