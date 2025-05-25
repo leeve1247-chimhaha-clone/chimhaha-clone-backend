@@ -45,6 +45,8 @@ public class SecurityConfig {
                         .requestMatchers("/get/src-url").permitAll()
                         .requestMatchers("/get/thumbnail-src-url").permitAll()
                         .requestMatchers("/get/thumbnail-src-url/*").permitAll()
+                        .requestMatchers("/get/comment/page").permitAll()
+                        .requestMatchers("/get/comment/page/*").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exceptions -> exceptions

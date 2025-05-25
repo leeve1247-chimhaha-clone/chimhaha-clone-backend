@@ -11,7 +11,8 @@ import java.util.List;
 @Repository
 public interface PostCategoryRepository extends JpaRepository<PostCategory, Long> {
     PostCategory findByKey(String key);
-    List<PostCategory> findPostCategoriesByParent (PostCategory postCategory);
+
+    List<PostCategory> findByLevelLessThanEqual(Integer level);
 
     @Query("SELECT pc FROM PostCategory pc Where pc.id = (SELECT MAX(pc2.id) FROM PostCategory pc2 WHERE pc2.key = pc.key)")
     List<PostCategory> findAllFlat();

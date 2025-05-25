@@ -9,10 +9,7 @@ import jakarta.annotation.security.RolesAllowed;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -26,8 +23,11 @@ public class CommentController {
 
     @GetMapping("/get/comment/page")
     public List<CommentDto> getCommentPage(
-            @RequestBody CommentPageRequest request
+            @RequestParam(name = "commentId", required = false) Long commentId,
+            @RequestParam(name = "postId") Long postId,
+            @RequestParam(name = "pageNum", required = false) Long pageNum
     ) {
+        CommentPageRequest request = new CommentPageRequest(postId, commentId, pageNum);
         return commentService.getCommentPage(request);
     }
 
