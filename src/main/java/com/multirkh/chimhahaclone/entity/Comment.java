@@ -56,6 +56,10 @@ public class Comment {
     @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
     private final List<CommentLikesUser> commentLikesUser = new ArrayList<>();
 
+    @Setter
+    @Column(name = "replies_count")
+    private Long replies_count;
+
     @CreatedDate
     private ZonedDateTime createdDate;
 

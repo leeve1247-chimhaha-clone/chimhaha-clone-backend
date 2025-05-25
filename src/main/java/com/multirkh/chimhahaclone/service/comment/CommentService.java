@@ -1,6 +1,8 @@
 package com.multirkh.chimhahaclone.service.comment;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.multirkh.chimhahaclone.controller.CommentPageRequest;
+import com.multirkh.chimhahaclone.dto.CommentDto;
 import com.multirkh.chimhahaclone.dto.CommentReceived;
 import com.multirkh.chimhahaclone.entity.*;
 import com.multirkh.chimhahaclone.entity.enums.PostStatus;
@@ -9,9 +11,11 @@ import com.multirkh.chimhahaclone.repository.CommentRepository;
 import com.multirkh.chimhahaclone.repository.PostRepository;
 import com.multirkh.chimhahaclone.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 
 import static com.multirkh.chimhahaclone.util.UtilStringJsonConverter.jsonNodeOf;
@@ -88,4 +92,31 @@ public class CommentService {
         if (request.getContent() == null) throw new IllegalArgumentException("content is null");
     }
 
+    public List<CommentDto> getCommentPage(@NotNull CommentPageRequest request){
+
+        if (request.getPostId() == null){
+            throw new IllegalArgumentException("postId is null");
+        }
+        List<CommentPage> commentPageList = commentRepository.getCommentPages(request.getPostId());
+
+        if (request.getCommentId() != null){
+            CommentPage commentPage = commentPageList.stream().filter(cp -> cp.getStartId() <= request.getCommentId() && cp.getEndId() >= request.getCommentId()).findFirst().orElseThrow(() -> new IllegalArgumentException("comment not found"));
+            List<Comment> comments = commentRepository.getRecursiveCommentsByStartEndId(commentPage.getStartId(), commentPage.getEndId(), request.getPostId());
+            return comments.stream().filter(rootComment -> rootComment.getParent() == null)
+                    .map(CommentDto::new).toList();
+        }
+
+        if (request.getPageNum() != null) {
+            CommentPage commentPage = commentPageList.get(Math.toIntExact(request.getPageNum()) - 1);
+            List<Comment> comments = commentRepository.getRecursiveCommentsByStartEndId(commentPage.getStartId(), commentPage.getEndId(), request.getPostId());
+            return comments.stream().filter(rootComment -> rootComment.getParent() == null)
+                    .map(CommentDto::new).toList();
+        }
+
+        CommentPage commentPage = commentPageList.getFirst();
+        List<Comment> comments = commentRepository.getRecursiveCommentsByStartEndId(commentPage.getStartId(), commentPage.getEndId(), request.getPostId());
+        return comments.stream().filter(rootComment -> rootComment.getParent() == null)
+                .map(CommentDto::new).toList();
+
+    }
 }
