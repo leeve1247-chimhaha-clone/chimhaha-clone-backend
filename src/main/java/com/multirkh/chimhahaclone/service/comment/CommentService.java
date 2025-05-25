@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.multirkh.chimhahaclone.util.UtilStringJsonConverter.jsonNodeOf;
 
@@ -93,7 +94,6 @@ public class CommentService {
     }
 
     public List<CommentDto> getCommentPage(@NotNull CommentPageRequest request){
-
         if (request.getPostId() == null){
             throw new IllegalArgumentException("postId is null");
         }
@@ -101,22 +101,28 @@ public class CommentService {
 
         if (request.getCommentId() != null){
             CommentPage commentPage = commentPageList.stream().filter(cp -> cp.getStartId() <= request.getCommentId() && cp.getEndId() >= request.getCommentId()).findFirst().orElseThrow(() -> new IllegalArgumentException("comment not found"));
-            List<Comment> comments = commentRepository.getRecursiveCommentsByStartEndId(commentPage.getStartId(), commentPage.getEndId(), request.getPostId());
-            return comments.stream().filter(rootComment -> rootComment.getParent() == null)
-                    .map(CommentDto::new).toList();
+            return getCommentDTOList(request, commentPage);
         }
 
         if (request.getPageNum() != null) {
             CommentPage commentPage = commentPageList.get(Math.toIntExact(request.getPageNum()) - 1);
-            List<Comment> comments = commentRepository.getRecursiveCommentsByStartEndId(commentPage.getStartId(), commentPage.getEndId(), request.getPostId());
-            return comments.stream().filter(rootComment -> rootComment.getParent() == null)
-                    .map(CommentDto::new).toList();
+            return getCommentDTOList(request, commentPage);
         }
 
         CommentPage commentPage = commentPageList.getFirst();
-        List<Comment> comments = commentRepository.getRecursiveCommentsByStartEndId(commentPage.getStartId(), commentPage.getEndId(), request.getPostId());
-        return comments.stream().filter(rootComment -> rootComment.getParent() == null)
-                .map(CommentDto::new).toList();
+        return getCommentDTOList(request, commentPage);
+    }
 
+    @NotNull
+    private List<CommentDto> getCommentDTOList(@NotNull CommentPageRequest request, CommentPage commentPage) {
+        List<Comment> comments = commentRepository.getRecursiveCommentsByStartEndId(commentPage.getStartId(), commentPage.getEndId(), request.getPostId());
+        List<CommentDto> commentDtoFlat = comments.stream().map(CommentDto::new).toList(); // 첫 id 에서 조회 쿼리 발생 이유는 모름
+        Map<Long, CommentDto> commentDtoMap = commentDtoFlat.stream().collect(Collectors.toMap(CommentDto::getId, c -> c));
+        for (CommentDto commentDto : commentDtoFlat){
+            if (commentDto.getParentId() != null){
+                commentDtoMap.get(commentDto.getParentId()).getChildren().add(commentDto);
+            }
+        }
+        return commentDtoFlat.stream().filter(commentDto -> commentDto.getParentId() == null).collect(Collectors.toList());
     }
 }

@@ -1,5 +1,6 @@
 package com.multirkh.chimhahaclone.category.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.multirkh.chimhahaclone.category.entity.PostCategory;
 import com.multirkh.chimhahaclone.dto.CommentDto;
 import com.multirkh.chimhahaclone.dto.PostDetailDto;
@@ -16,22 +17,19 @@ public class PostCategoryDto {
     private final Integer level;
     private final String key;
     private final String korean;
-    private final List<PostCategoryDto> children  = new ArrayList<>();
+    private final List<PostCategoryDto> children = new ArrayList<>();
+    @JsonIgnore
+    private final Long parentId;
 
     public PostCategoryDto(PostCategory postCategory) {
         this.id = postCategory.getId();
         this.level = postCategory.getLevel();
         this.key = postCategory.getKey();
         this.korean = postCategory.getKorean();
-        if (postCategory.getChildren() != null) {
-            postCategory.getChildren().forEach(child -> children.add(new PostCategoryDto(child)));
+        if (postCategory.getParent() != null) {
+            this.parentId = postCategory.getParent().getId();
+            return;
         }
-    }
-
-    public PostCategoryDto(Long id, Integer level, String key, String korean){
-           this.id = id;
-           this.level = level;
-           this.key = key;
-           this.korean = korean;
+        this.parentId = null;
     }
 }

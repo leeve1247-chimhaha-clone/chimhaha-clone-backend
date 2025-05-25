@@ -1,10 +1,10 @@
 package com.multirkh.chimhahaclone.controller;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
+@AllArgsConstructor
 public class CommentPageRequest {
     private Long postId;
     private Long pageNum;
