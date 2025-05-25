@@ -2,10 +2,6 @@ package com.multirkh.chimhahaclone.category.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.multirkh.chimhahaclone.category.entity.PostCategory;
-import com.multirkh.chimhahaclone.dto.CommentDto;
-import com.multirkh.chimhahaclone.dto.PostDetailDto;
-import com.multirkh.chimhahaclone.entity.Post;
-import jakarta.persistence.*;
 import lombok.Getter;
 
 import java.util.ArrayList;

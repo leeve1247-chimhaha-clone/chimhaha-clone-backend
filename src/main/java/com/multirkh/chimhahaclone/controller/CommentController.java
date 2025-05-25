@@ -27,8 +27,15 @@ public class CommentController {
             @RequestParam(name = "postId") Long postId,
             @RequestParam(name = "pageNum", required = false) Long pageNum
     ) {
-        CommentPageRequest request = new CommentPageRequest(postId, commentId, pageNum);
+        CommentPageRequest request = new CommentPageRequest(postId, pageNum, commentId);
         return commentService.getCommentPage(request);
+    }
+
+    @GetMapping("/get/comment/page-size")
+    public Integer getCommentPageSize(
+            @RequestParam(name = "postId") Long postId
+    ){
+        return commentService.getCommentPageSize(postId);
     }
 
     @PostMapping("/save/comment")
