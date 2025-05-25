@@ -30,4 +30,13 @@ public class CommentDto {
             comment.getChildren().forEach(child -> children.add(new CommentDto(child)));
         }
     }
+
+    public CommentDto(Comment comment, boolean flat){
+        this.id = comment.getId();
+        this.username = comment.getUser().getUserName();
+        this.content = comment.getContent();
+        this.likes = comment.getLikes();
+        this.status = comment.getStatus();
+        this.lastEditedDate = comment.getEditedDate();
+    }
 }

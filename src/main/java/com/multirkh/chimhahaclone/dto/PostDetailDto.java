@@ -1,13 +1,11 @@
 package com.multirkh.chimhahaclone.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.multirkh.chimhahaclone.entity.Post;
 import com.multirkh.chimhahaclone.entity.enums.PostStatus;
 import lombok.Getter;
 
 import java.time.ZonedDateTime;
-import java.util.List;
 
 @Getter
 public class PostDetailDto {
@@ -20,7 +18,6 @@ public class PostDetailDto {
     private final Integer likes;
     private final Integer postId;
     private final JsonNode content;
-    private final List<CommentDto> comments;
     private final String userAuthId;
 
     public PostDetailDto(Post post, JsonNode content){
@@ -33,7 +30,6 @@ public class PostDetailDto {
         this.likes = post.getLikes();
         this.postId = post.getId().intValue();
         this.content = content;
-        this.comments = post.getComments().stream().filter(comment -> comment.getParent() == null).map(CommentDto::new).toList();
         this.userAuthId = post.getUser().getUserAuthId();
     }
 }
