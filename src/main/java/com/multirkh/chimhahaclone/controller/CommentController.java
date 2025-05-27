@@ -6,7 +6,6 @@ import com.multirkh.chimhahaclone.entity.Comment;
 import com.multirkh.chimhahaclone.service.comment.CommentService;
 import com.multirkh.chimhahaclone.service.post.PostService;
 import jakarta.annotation.security.RolesAllowed;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +27,7 @@ public class CommentController {
             @RequestParam(name = "pageNum", required = false) Long pageNum
     ) {
         CommentPageRequest request = new CommentPageRequest(postId, pageNum, commentId);
-        return commentService.getCommentPage(request);
+        return commentService.getCommentTree(request);
     }
 
     @GetMapping("/get/comment/page-size")
@@ -40,33 +39,33 @@ public class CommentController {
 
     @PostMapping("/save/comment")
     @RolesAllowed("USER")
-    public CommentDto createComment(
+    public Integer createComment(
             @RequestBody CommentReceived request
     ) {
         commentService.validateCommentForm(request);
         Comment comment = commentService.createComment(request);
         postService.increaseCommentCount(comment.getPost());
-        return new CommentDto(comment);
+        return commentService.getCommentPage(comment);
     }
 
     @PostMapping("/update/comment")
     @RolesAllowed("USER")
-    public CommentDto updateComment(
+    public Integer updateComment(
             @RequestBody CommentReceived request
     ) {
         commentService.validateCommentForm(request);
         Comment comment = commentService.updateComment(request);
-        return new CommentDto(comment);
+        return commentService.getCommentPage(comment);
     }
 
     @PostMapping("/delete/comment")
     @RolesAllowed("USER")
-    public CommentDto deleteComment(
+    public Integer deleteComment(
             @RequestBody CommentReceived request
     ) {
         Comment comment = commentService.deleteComment(request);
         postService.decreaseCommentCount(comment.getPost());
-        return new CommentDto(comment);
+        return commentService.getCommentPage(comment);
     }
 
 
