@@ -1,6 +1,7 @@
 package com.multirkh.chimhahaclone.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.multirkh.chimhahaclone.entity.Comment;
 import com.multirkh.chimhahaclone.entity.enums.PostStatus;
@@ -19,16 +20,18 @@ public class CommentDto {
     private final List<CommentDto> children = new ArrayList<>();
     private final PostStatus status;
     private final ZonedDateTime lastEditedDate;
+    private final Boolean selfLiked;
     @JsonIgnore
     private final Long ParentId;
 
-    public CommentDto(Comment comment) {
+    public CommentDto(Comment comment, Boolean selfLiked) {
         this.id = comment.getId();
         this.username = comment.getUser().getUserName();
         this.content = comment.getContent();
         this.likes = comment.getLikes();
         this.status = comment.getStatus();
         this.lastEditedDate = comment.getEditedDate();
+        this.selfLiked = selfLiked;
         if (comment.getParent() != null) {
             this.ParentId = comment.getParent().getId();
             return;

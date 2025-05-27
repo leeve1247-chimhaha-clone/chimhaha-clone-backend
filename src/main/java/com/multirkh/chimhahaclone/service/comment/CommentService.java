@@ -19,9 +19,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.multirkh.chimhahaclone.util.UtilStringJsonConverter.jsonNodeOf;
@@ -50,6 +48,12 @@ public class CommentService {
             comment = new Comment(jsonContent, post, user, 0);
         }
 
+        Comment parentComment = comment.getParent();
+        while (parentComment != null) {
+            parentComment.setReplies_count(parentComment.getReplies_count() + 1L);
+            parentComment = comment.getParent();
+        }
+
         return commentRepository.save(comment);
     }
 
@@ -68,8 +72,16 @@ public class CommentService {
         Comment comment = commentRepository.findById(request.getParentCommentId()).orElseThrow(() -> new IllegalArgumentException("comment not found"));
         if (!comment.getUser().getId().equals(user.getId()))
             throw new IllegalArgumentException("You are not the owner of this comment");
-        comment.setContent(jsonNodeOf("{\"ops\": [{\"insert\": \"삭제된 댓글입니다\\n\"}]}"));
+        comment.setContent(jsonNodeOf("{\"root\": {\"type\": \"root\", \"format\": \"\", \"indent\": 0, \"version\": 1, \"children\": [{\"type\": \"paragraph\", \"format\": \"\", \"indent\": 0, \"version\": 1, \"children\": [{\"mode\": \"normal\", \"text\": \"삭제된 댓글입니다.\", \"type\": \"text\", \"style\": \"\", \"detail\": 0, \"format\": 0, \"version\": 1}], \"direction\": \"ltr\", \"textStyle\": \"\", \"textFormat\": 0}], \"direction\": \"ltr\"}}"));
         comment.setStatus(PostStatus.DELETED);
+        Comment parentComment = comment.getParent();
+        Long repliesCount = comment.getReplies_count();
+        if (repliesCount == null) repliesCount = 1L;
+        else repliesCount = repliesCount + 1L;
+        while (parentComment != null) {
+            parentComment.setReplies_count(parentComment.getReplies_count() - repliesCount);
+            parentComment = comment.getParent();
+        }
         return commentRepository.save(comment);
     }
 
@@ -102,7 +114,7 @@ public class CommentService {
         if (request.getContent() == null) throw new IllegalArgumentException("content is null");
     }
 
-    public List<CommentDto> getCommentPage(@NotNull CommentPageRequest request) {
+    public List<CommentDto> getCommentTree(@NotNull CommentPageRequest request) {
         if (request.getPostId() == null) {
             throw new IllegalArgumentException("postId is null");
         }
@@ -112,8 +124,8 @@ public class CommentService {
         if (request.getCommentId() != null) {
             CommentPage commentPage = commentPageList
                     .stream().filter(cp ->
-                                                    cp.getStartId() <= request.getCommentId() &&
-                                                    cp.getEndId() >= request.getCommentId()
+                            cp.getStartId() <= request.getCommentId() &&
+                                    cp.getEndId() >= request.getCommentId()
                     )
                     .findFirst().orElseThrow(() -> new IllegalArgumentException("comment not found"));
             return getCommentDTOList(request, commentPage);
@@ -123,8 +135,6 @@ public class CommentService {
             int pageIndex = Math.toIntExact(request.getPageNum()) - 1;
             if (pageIndex < 0 || pageIndex >= commentPageList.size()) return new ArrayList<>();
             CommentPage commentPage = commentPageList.get(pageIndex);
-            System.out.println("commentPage.getStartId() = " + commentPage.getStartId());
-            System.out.println("commentPage.getStartId() = " + commentPage.getEndId());
             return getCommentDTOList(request, commentPage);
         }
 
@@ -135,8 +145,17 @@ public class CommentService {
     @NotNull
     private List<CommentDto> getCommentDTOList(@NotNull CommentPageRequest request, CommentPage commentPage) {
         List<Comment> comments = commentRepository.getRecursiveCommentsByStartEndId(commentPage.getStartId(), commentPage.getEndId(), request.getPostId());
-        List<CommentDto> commentDtoFlat = comments.stream().map(CommentDto::new).toList(); // 첫 id 에서 조회 쿼리 발생 이유는 모름
+        List<Comment> selfLiked = commentRepository.getSelfLiked(comments);
+        Set<Long> selfLikedId = selfLiked.stream().map(Comment::getId).collect(Collectors.toSet());
+        List<CommentDto> commentDtoFlat = comments.stream().map(c -> {
+            if (selfLikedId.contains(c.getId())) {
+                return new CommentDto(c, true);
+            } else {
+                return new CommentDto(c, false);
+            }
+        }).toList();
         Map<Long, CommentDto> commentDtoMap = commentDtoFlat.stream().collect(Collectors.toMap(CommentDto::getId, c -> c));
+
         for (CommentDto commentDto : commentDtoFlat) {
             if (commentDto.getParentId() != null) {
                 commentDtoMap.get(commentDto.getParentId()).getChildren().add(commentDto);
@@ -150,5 +169,44 @@ public class CommentService {
         Integer commentsSum = commentRepository.countCommentsByPost(post);
         if (commentsSum == null) commentsSum = 0;
         return (int) Math.ceil((double) commentsSum / numCommentsPerPage);
+    }
+
+    public Integer getCommentPage(@NotNull Comment comment) {
+        List<CommentPage> commentPageList = commentRepository.getCommentPages(comment.getPost().getId(), numCommentsPerPage);
+        int pageNum = getPageNum(comment, commentPageList);
+        if (pageNum < 1) {
+            throw new IllegalArgumentException("comment not found in comment pages");
+        }
+        return pageNum;
+    }
+
+    private int getPageNum(@NotNull Comment comment, List<CommentPage> commentPageList) {
+        while (comment.getParent() != null) {
+            comment = comment.getParent();
+        }
+        if (comment.getStatus() == PostStatus.DELETED) {
+            return findIntervalIndexForDeleted(commentPageList, comment.getId()) + 1;
+        }
+        return findIntervalIndex(commentPageList, comment.getId()) + 1;
+    }
+
+    private Integer findIntervalIndexForDeleted(List<CommentPage> commentPageList, Long commentId) {
+        Comparator<CommentPage> comparator = Comparator.comparing(CommentPage::getStartId);
+        int i = Collections.binarySearch(commentPageList, new CommentPage(commentId, commentId), comparator);
+        if ( i >= 1){
+            return i-1;
+        } else {
+            int nearestPoint = -i;
+            return Math.max(nearestPoint - 2, 0);
+        }
+    }
+
+    private Integer findIntervalIndex(List<CommentPage> commentPageList, Long commentId) {
+        Comparator<CommentPage> comparator = (index1, index2) -> {
+            if (index1.getEndId() < index2.getStartId()) return -1;
+            if (index1.getStartId() > index2.getEndId()) return 1;
+            return 0;
+        };
+        return Collections.binarySearch(commentPageList, new CommentPage(commentId, commentId), comparator);
     }
 }
