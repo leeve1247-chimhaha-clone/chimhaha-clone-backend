@@ -1,11 +1,11 @@
 package com.multirkh.chimhahaclone.controller;
 
+import com.multirkh.chimhahaclone.category.repository.PostCategoryRepository;
 import com.multirkh.chimhahaclone.dto.PostDetailDto;
 import com.multirkh.chimhahaclone.dto.PostListComponentDto;
 import com.multirkh.chimhahaclone.dto.PostReceived;
 import com.multirkh.chimhahaclone.entity.Post;
 import com.multirkh.chimhahaclone.redis.ViewCountService;
-import com.multirkh.chimhahaclone.category.repository.PostCategoryRepository;
 import com.multirkh.chimhahaclone.repository.PostLikesUserRepository;
 import com.multirkh.chimhahaclone.repository.PostRepository;
 import com.multirkh.chimhahaclone.repository.UserRepository;
@@ -19,18 +19,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
 public class PostController {
 
-    private final PostRepository postRepository;
-    private final PostCategoryRepository postCategoryRepository;
-    private final UserRepository userRepository;
     private final ViewCountService viewCountService;
-    private final PostLikesUserRepository postLikesUserRepository;
-    private final ImageService imageService;
     private final PostService postService;
 
     @GetMapping("/")
@@ -47,7 +41,7 @@ public class PostController {
     @GetMapping("/posts/detail")
     public PostDetailDto getPosts(@RequestParam(name = "num") Long postNum) {
         viewCountService.incrementViewCount(postNum);
-        return  postService.findPost(postNum);
+        return postService.findPost(postNum);
     }
 
     @PostMapping("/save")
@@ -83,9 +77,9 @@ public class PostController {
     @PostMapping("/posts/like")
     @RolesAllowed("USER")
     public Integer likePost(
-            @RequestBody Map<String, Long> body
+            @RequestBody LikeRequest request
     ) {
-        return postService.updateLikesCount(body);
+        return postService.updateLikesCount(request);
     }
 }
 

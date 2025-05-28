@@ -19,8 +19,9 @@ public class PostDetailDto {
     private final Integer postId;
     private final JsonNode content;
     private final String userAuthId;
+    private final Boolean selfLiked;
 
-    public PostDetailDto(Post post, JsonNode content){
+    public PostDetailDto(Post post, JsonNode content, Boolean selfLiked) {
         this.title = post.getTitle();
         this.username = post.getUser().getUserName();
         this.status = post.getStatus();
@@ -31,5 +32,6 @@ public class PostDetailDto {
         this.postId = post.getId().intValue();
         this.content = content;
         this.userAuthId = post.getUser().getUserAuthId();
+        this.selfLiked = selfLiked;
     }
 }
