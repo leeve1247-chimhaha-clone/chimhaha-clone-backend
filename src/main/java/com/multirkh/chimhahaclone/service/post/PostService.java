@@ -3,6 +3,7 @@ package com.multirkh.chimhahaclone.service.post;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.multirkh.chimhahaclone.category.entity.PostCategory;
 import com.multirkh.chimhahaclone.category.repository.PostCategoryRepository;
+import com.multirkh.chimhahaclone.controller.LikeRequest;
 import com.multirkh.chimhahaclone.dto.PostDetailDto;
 import com.multirkh.chimhahaclone.dto.PostListComponentDto;
 import com.multirkh.chimhahaclone.dto.PostReceived;
@@ -17,7 +18,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -96,10 +96,12 @@ public class PostService {
     }
 
     public PostDetailDto findPost(Long postNum) {
-        Post postEntity = postRepository.findById(postNum).orElseThrow(() -> new IllegalArgumentException("post not found"));
-        if (postEntity.getStatus() == PostStatus.DELETED) throw new FindDeletedPostException();
-        JsonNode appliedPresignedUrlToImageSrcContent = imageService.applyPresignedUrlToImageSrc(postEntity.getJsonContent());
-        return new PostDetailDto(postEntity, appliedPresignedUrlToImageSrcContent);
+        Post post = postRepository.findByIdPostStatusNotDeleted(postNum).orElseThrow(() -> new IllegalArgumentException("Post not Found"));
+        if (post.getStatus() == PostStatus.DELETED) throw new FindDeletedPostException();
+        Post selfLikedPost = postRepository.findSelfLiked(post);
+        boolean selfLiked = selfLikedPost != null;
+        JsonNode appliedPresignedUrlToImageSrcContent = imageService.applyPresignedUrlToImageSrc(post.getJsonContent());
+        return new PostDetailDto(post, appliedPresignedUrlToImageSrcContent, selfLiked);
     }
 
     public List<PostListComponentDto> findPostList() {
@@ -137,9 +139,9 @@ public class PostService {
         postRepository.save(post);
     }
 
-    public Integer updateLikesCount(Map<String, Long> body) {
+    public Integer updateLikesCount(LikeRequest request) {
         String user_auth_id = SecurityContextHolder.getContext().getAuthentication().getName();
-        Post post = postRepository.findById(body.get("num")).orElseThrow(() -> new IllegalArgumentException("post not found"));
+        Post post = postRepository.findById(request.getPostId()).orElseThrow(() -> new IllegalArgumentException("post not found"));
         User user = userRepository.findByUserAuthId(user_auth_id);
         PostLikesUser postLikesUser = postLikesUserRepository.findByPostAndUser(post, user);
         if (postLikesUser == null) {
