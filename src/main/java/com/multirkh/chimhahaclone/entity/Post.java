@@ -68,7 +68,7 @@ public class Post {
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private final List<Comment> comments = new ArrayList<>();
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "post")
     private final Set<PostImage> postImages = new HashSet<>();
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -108,27 +108,13 @@ public class Post {
         this.commentsCount = 0;
     }
 
-    public void addPostImage(Image image) {
-        PostImage postImage = new PostImage(this, image);
-        this.postImages.add(postImage);
-        image.getPostImages().add(postImage);
+    public void addPostImages(Set<PostImage> postImageSet) {
+        this.postImages.addAll(postImageSet);
+
     }
 
-    public void addPostImages(Set<Image> images) {
-        for (Image image : images) {
-            addPostImage(image);
-        }
-    }
-
-    public void removePostImage(Image image) {
-        Set<PostImage> postImage = this.postImages.stream().filter(p -> p.getImage().equals(image)).collect(Collectors.toSet());
-        image.getPostImages().removeAll(postImage);
-        this.postImages.removeAll(postImage);
-    }
-
-    public void removePostImages(Set<Image> images) {
-        Set<PostImage> toBeRemovedPostImages = this.postImages.stream().filter(p -> images.contains(p.getImage())).collect(Collectors.toSet());
-        this.postImages.removeAll(toBeRemovedPostImages);
+    public void removePostImages(Set<PostImage> postImageSet) {
+        this.postImages.removeAll(postImageSet);
     }
 
     public void addThumbNailImage(Image thumbNailImage) {

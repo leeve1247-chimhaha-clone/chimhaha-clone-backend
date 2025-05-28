@@ -1,5 +1,6 @@
 package com.multirkh.chimhahaclone.entity;
 
+import com.multirkh.chimhahaclone.category.entity.PostCategory;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,7 +10,9 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -39,8 +42,8 @@ public class Image {
     @JoinColumn(name = "raw_image_id")
     private Image rawImage;
 
-    @Setter
     @OneToOne(mappedBy = "rawImage")
+    @Setter
     private Image thumbNailImage;
 
     @OneToMany(mappedBy = "thumbNailImage")
