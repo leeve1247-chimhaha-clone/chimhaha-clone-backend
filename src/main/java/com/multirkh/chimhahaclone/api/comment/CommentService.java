@@ -1,6 +1,7 @@
-package com.multirkh.chimhahaclone.api.comment.service;
+package com.multirkh.chimhahaclone.api.comment;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.multirkh.chimhahaclone.api.comment.dtos.CommentPage;
 import com.multirkh.chimhahaclone.api.comment.dtos.CommentPageRequest;
 import com.multirkh.chimhahaclone.api.comment.dtos.CommentDto;
 import com.multirkh.chimhahaclone.api.comment.dtos.CommentReceived;
@@ -10,7 +11,6 @@ import com.multirkh.chimhahaclone.api.post.domain.Post;
 import com.multirkh.chimhahaclone.api.user.domain.User;
 import com.multirkh.chimhahaclone.api.post.domain.PostStatus;
 import com.multirkh.chimhahaclone.api.comment.likes.CommentLikesUserRepository;
-import com.multirkh.chimhahaclone.api.comment.CommentRepository;
 import com.multirkh.chimhahaclone.api.post.PostRepository;
 import com.multirkh.chimhahaclone.api.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -47,14 +47,7 @@ public class CommentService {
         } else {
             comment = new Comment(jsonContent, post, user, 0);
         }
-
-        Comment parentComment = comment.getParent();
-        while (parentComment != null) {
-            Long repliesCount = parentComment.getReplies_count();
-            if (repliesCount == null) repliesCount = 0L;
-            parentComment.setReplies_count( repliesCount + 1L);
-            parentComment = comment.getParent();
-        }
+        addCommentRepliesCount(comment);
         return commentRepository.save(comment);
     }
 
@@ -75,15 +68,31 @@ public class CommentService {
             throw new IllegalArgumentException("You are not the owner of this comment");
         comment.setContent(jsonNodeOf("{\"root\": {\"type\": \"root\", \"format\": \"\", \"indent\": 0, \"version\": 1, \"children\": [{\"type\": \"paragraph\", \"format\": \"\", \"indent\": 0, \"version\": 1, \"children\": [{\"mode\": \"normal\", \"text\": \"삭제된 댓글입니다.\", \"type\": \"text\", \"style\": \"\", \"detail\": 0, \"format\": 0, \"version\": 1}], \"direction\": \"ltr\", \"textStyle\": \"\", \"textFormat\": 0}], \"direction\": \"ltr\"}}"));
         comment.setStatus(PostStatus.DELETED);
+        subtractCommentRepliesCount(comment);
+        return commentRepository.save(comment);
+    }
+
+    private static void addCommentRepliesCount(@NotNull Comment comment) {
+        Comment parentComment = comment.getParent();
+        while (parentComment != null) {
+            Long repliesCount = parentComment.getReplies_count();
+            if (repliesCount == null) repliesCount = 0L;
+            parentComment.setReplies_count( repliesCount + 1L);
+            parentComment = parentComment.getParent();
+        }
+    }
+
+    private static void subtractCommentRepliesCount(@NotNull Comment comment) {
         Comment parentComment = comment.getParent();
         Long repliesCount = comment.getReplies_count();
         if (repliesCount == null) repliesCount = 1L;
         else repliesCount = repliesCount + 1L;
         while (parentComment != null) {
-            parentComment.setReplies_count(parentComment.getReplies_count() - repliesCount);
-            parentComment = comment.getParent();
+            long updatedRepliesCount = parentComment.getReplies_count() - repliesCount;
+            if (updatedRepliesCount == 0L) parentComment.setReplies_count(null);
+            else parentComment.setReplies_count(updatedRepliesCount);
+            parentComment = parentComment.getParent();
         }
-        return commentRepository.save(comment);
     }
 
     public Integer updateCommentLikes(Map<String, Long> body) {
