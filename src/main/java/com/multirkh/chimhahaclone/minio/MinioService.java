@@ -1,7 +1,6 @@
 package com.multirkh.chimhahaclone.minio;
 
-import com.multirkh.chimhahaclone.repository.ImageRepository;
-import com.multirkh.chimhahaclone.service.image.resize.ImageResizerService;
+import com.multirkh.chimhahaclone.service.api.image.resize.ImageResizerService;
 import io.minio.*;
 import io.minio.http.Method;
 import io.minio.messages.DeleteError;

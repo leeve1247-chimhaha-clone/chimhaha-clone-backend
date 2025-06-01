@@ -1,4 +1,4 @@
-package com.multirkh.chimhahaclone.service.comment;
+package com.multirkh.chimhahaclone.service.api.comment;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

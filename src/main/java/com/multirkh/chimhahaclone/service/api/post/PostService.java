@@ -1,4 +1,4 @@
-package com.multirkh.chimhahaclone.service.post;
+package com.multirkh.chimhahaclone.service.api.post;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.multirkh.chimhahaclone.category.entity.PostCategory;
@@ -7,13 +7,19 @@ import com.multirkh.chimhahaclone.controller.LikeRequest;
 import com.multirkh.chimhahaclone.dto.PostDetailDto;
 import com.multirkh.chimhahaclone.dto.PostListComponentDto;
 import com.multirkh.chimhahaclone.dto.PostReceived;
-import com.multirkh.chimhahaclone.entity.*;
+import com.multirkh.chimhahaclone.entity.Post;
+import com.multirkh.chimhahaclone.entity.PostLikesUser;
+import com.multirkh.chimhahaclone.entity.User;
 import com.multirkh.chimhahaclone.entity.enums.PostStatus;
 import com.multirkh.chimhahaclone.exception.FindDeletedPostException;
-import com.multirkh.chimhahaclone.repository.*;
-import com.multirkh.chimhahaclone.service.image.ImageService;
-import com.multirkh.chimhahaclone.service.user.UserService;
+import com.multirkh.chimhahaclone.repository.CommentRepository;
+import com.multirkh.chimhahaclone.repository.PostLikesUserRepository;
+import com.multirkh.chimhahaclone.repository.PostRepository;
+import com.multirkh.chimhahaclone.repository.UserRepository;
+import com.multirkh.chimhahaclone.service.api.image.ImageService;
+import com.multirkh.chimhahaclone.service.api.user.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -92,7 +98,9 @@ public class PostService {
     private void validatePostForm(PostReceived request) {
         if (request.getTitle() == null) throw new IllegalArgumentException("title is null");
         if (request.getContent() == null) throw new IllegalArgumentException("content is null");
-        if (request.getPostCategoryKey() == null) throw new IllegalArgumentException("postCategoryName is null");
+        if (request.getPostCategoryKey() == null) throw new IllegalArgumentException("post category is null");
+        if (postCategoryRepository.findPostCategoryByKey(request.getPostCategoryKey()).isEmpty())
+            throw new IllegalArgumentException("post category is not exist");
     }
 
     public PostDetailDto findPost(Long postNum) {
@@ -105,22 +113,20 @@ public class PostService {
     }
 
     public List<PostListComponentDto> findPostList() {
+        PageRequest pageRequest = PageRequest.of(0, 30);
         return postRepository
-                .findAllByOrderByCreatedDateDesc()
+                .findAllByOrderByCreatedDate(pageRequest)
                 .stream()
-                .filter(post -> post
-                        .getStatus() == PostStatus.POSTED
-                )
                 .map(PostListComponentDto::new)
                 .toList();
     }
 
 
     public List<PostListComponentDto> findPostList(String category) {
+        PageRequest pageRequest = PageRequest.of(0, 30);
         return postRepository
-                .findAllByOrderByCreatedDateWhere(category)
+                .findAllByOrderByCreatedDateWhere(category, pageRequest)
                 .stream()
-                .filter(post -> post.getStatus() == PostStatus.POSTED)
                 .map(PostListComponentDto::new)
                 .toList();
     }

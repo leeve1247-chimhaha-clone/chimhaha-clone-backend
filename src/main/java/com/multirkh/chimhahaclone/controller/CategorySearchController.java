@@ -1,7 +1,7 @@
 package com.multirkh.chimhahaclone.controller;
 
 import com.multirkh.chimhahaclone.dto.CategorySearchResultDto;
-import com.multirkh.chimhahaclone.service.search.CategorySearchService;
+import com.multirkh.chimhahaclone.service.api.search.CategorySearchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;

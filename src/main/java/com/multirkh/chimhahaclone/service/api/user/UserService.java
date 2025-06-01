@@ -1,4 +1,4 @@
-package com.multirkh.chimhahaclone.service.user;
+package com.multirkh.chimhahaclone.service.api.user;
 
 import com.multirkh.chimhahaclone.entity.User;
 import com.multirkh.chimhahaclone.repository.UserRepository;

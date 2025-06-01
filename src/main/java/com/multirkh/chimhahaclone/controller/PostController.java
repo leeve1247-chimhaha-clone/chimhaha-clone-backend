@@ -1,16 +1,11 @@
 package com.multirkh.chimhahaclone.controller;
 
-import com.multirkh.chimhahaclone.category.repository.PostCategoryRepository;
 import com.multirkh.chimhahaclone.dto.PostDetailDto;
 import com.multirkh.chimhahaclone.dto.PostListComponentDto;
 import com.multirkh.chimhahaclone.dto.PostReceived;
 import com.multirkh.chimhahaclone.entity.Post;
 import com.multirkh.chimhahaclone.redis.ViewCountService;
-import com.multirkh.chimhahaclone.repository.PostLikesUserRepository;
-import com.multirkh.chimhahaclone.repository.PostRepository;
-import com.multirkh.chimhahaclone.repository.UserRepository;
-import com.multirkh.chimhahaclone.service.image.ImageService;
-import com.multirkh.chimhahaclone.service.post.PostService;
+import com.multirkh.chimhahaclone.service.api.post.PostService;
 import jakarta.annotation.security.RolesAllowed;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -34,7 +29,7 @@ public class PostController {
 
     @GetMapping("/posts")
     public List<PostListComponentDto> getPosts(@RequestParam(name="category", required = false) String category) {
-        if (category == null || category.equals("ALL")){return postService.findPostList();}
+        if (category == null || category.equalsIgnoreCase("all")){return postService.findPostList();}
         return postService.findPostList(category);
     }
 
@@ -49,9 +44,6 @@ public class PostController {
             @RequestBody PostReceived request
     ) {
         Collection<? extends GrantedAuthority> authorities = SecurityContextHolder.getContext().getAuthentication().getAuthorities();
-        for (GrantedAuthority authority : authorities) {
-            System.out.println("Authority: " + authority.getAuthority());
-        }
         postService.validateCreatePost(request);
         return postService.createPost(request);
     }

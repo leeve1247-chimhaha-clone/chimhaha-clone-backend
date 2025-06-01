@@ -1,7 +1,7 @@
 package com.multirkh.chimhahaclone.controller;
 
 import com.multirkh.chimhahaclone.repository.UserRepository;
-import com.multirkh.chimhahaclone.service.user.UserService;
+import com.multirkh.chimhahaclone.service.api.user.UserService;
 import jakarta.annotation.security.RolesAllowed;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;

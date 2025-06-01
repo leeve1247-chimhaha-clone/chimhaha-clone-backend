@@ -1,4 +1,4 @@
-package com.multirkh.chimhahaclone.service.comment;
+package com.multirkh.chimhahaclone.service.api.comment;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.multirkh.chimhahaclone.controller.CommentPageRequest;
