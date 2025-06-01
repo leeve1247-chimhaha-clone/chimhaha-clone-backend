@@ -1,10 +1,9 @@
-package com.multirkh.chimhahaclone.api.comment.controller;
+package com.multirkh.chimhahaclone.api.comment;
 
 import com.multirkh.chimhahaclone.api.comment.dtos.CommentPageRequest;
 import com.multirkh.chimhahaclone.api.comment.dtos.CommentDto;
 import com.multirkh.chimhahaclone.api.comment.dtos.CommentReceived;
 import com.multirkh.chimhahaclone.api.comment.domain.Comment;
-import com.multirkh.chimhahaclone.api.comment.service.CommentService;
 import com.multirkh.chimhahaclone.api.post.PostService;
 import jakarta.annotation.security.RolesAllowed;
 import lombok.RequiredArgsConstructor;
