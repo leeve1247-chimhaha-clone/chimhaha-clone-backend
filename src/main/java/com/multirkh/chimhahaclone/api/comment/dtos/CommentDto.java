@@ -1,0 +1,40 @@
+package com.multirkh.chimhahaclone.api.comment.dtos;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.multirkh.chimhahaclone.api.comment.domain.Comment;
+import com.multirkh.chimhahaclone.api.post.domain.PostStatus;
+import lombok.Getter;
+
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+@Getter
+public class CommentDto {
+    private final String username;
+    private final JsonNode content;
+    private final Long id;
+    private final Integer likes;
+    private final List<CommentDto> children = new ArrayList<>();
+    private final PostStatus status;
+    private final ZonedDateTime lastEditedDate;
+    private final Boolean selfLiked;
+    @JsonIgnore
+    private final Long ParentId;
+
+    public CommentDto(Comment comment, Boolean selfLiked) {
+        this.id = comment.getId();
+        this.username = comment.getUser().getUserName();
+        this.content = comment.getContent();
+        this.likes = comment.getLikes();
+        this.status = comment.getStatus();
+        this.lastEditedDate = comment.getEditedDate();
+        this.selfLiked = selfLiked;
+        if (comment.getParent() != null) {
+            this.ParentId = comment.getParent().getId();
+            return;
+        }
+        this.ParentId = null;
+    }
+}
