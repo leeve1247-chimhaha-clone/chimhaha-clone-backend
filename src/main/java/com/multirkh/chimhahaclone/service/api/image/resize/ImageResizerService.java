@@ -1,4 +1,4 @@
-package com.multirkh.chimhahaclone.service.image.resize;
+package com.multirkh.chimhahaclone.service.api.image.resize;
 
 import net.coobird.thumbnailator.Thumbnailator;
 import org.jetbrains.annotations.NotNull;

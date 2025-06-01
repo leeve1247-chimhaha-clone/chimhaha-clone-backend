@@ -3,11 +3,7 @@ package com.multirkh.chimhahaclone.controller;
 import com.multirkh.chimhahaclone.category.dto.PostCategoryDto;
 import com.multirkh.chimhahaclone.category.entity.PostCategory;
 import com.multirkh.chimhahaclone.category.repository.PostCategoryRepository;
-import com.multirkh.chimhahaclone.dto.CommentDto;
-import com.multirkh.chimhahaclone.entity.Comment;
-import com.multirkh.chimhahaclone.service.comment.CommentPage;
 import lombok.RequiredArgsConstructor;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

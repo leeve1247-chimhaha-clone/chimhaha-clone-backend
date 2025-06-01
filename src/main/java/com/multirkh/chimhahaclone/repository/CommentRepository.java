@@ -2,7 +2,7 @@ package com.multirkh.chimhahaclone.repository;
 
 import com.multirkh.chimhahaclone.entity.Comment;
 import com.multirkh.chimhahaclone.entity.Post;
-import com.multirkh.chimhahaclone.service.comment.CommentPage;
+import com.multirkh.chimhahaclone.service.api.comment.CommentPage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

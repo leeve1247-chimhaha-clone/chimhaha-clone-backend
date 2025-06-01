@@ -1,4 +1,4 @@
-package com.multirkh.chimhahaclone.service.search;
+package com.multirkh.chimhahaclone.service.api.search;
 
 import com.multirkh.chimhahaclone.category.repository.PostCategoryRepository;
 import com.multirkh.chimhahaclone.dto.CategorySearchResultDto;

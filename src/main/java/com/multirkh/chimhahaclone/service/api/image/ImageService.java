@@ -1,4 +1,4 @@
-package com.multirkh.chimhahaclone.service.image;
+package com.multirkh.chimhahaclone.service.api.image;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;

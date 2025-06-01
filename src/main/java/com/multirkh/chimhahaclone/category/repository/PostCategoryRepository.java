@@ -16,4 +16,7 @@ public interface PostCategoryRepository extends JpaRepository<PostCategory, Long
 
     @Query("SELECT pc FROM PostCategory pc Where pc.id = (SELECT MAX(pc2.id) FROM PostCategory pc2 WHERE pc2.key = pc.key)")
     List<PostCategory> findAllFlat();
+
+    @Query("Select pc FROM PostCategory pc Where pc.key = :key and pc.level <= 2")
+    List<PostCategory> findPostCategoryByKey(String key);
 }
