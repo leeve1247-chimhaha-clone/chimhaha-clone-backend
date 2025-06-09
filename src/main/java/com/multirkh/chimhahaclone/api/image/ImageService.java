@@ -117,14 +117,6 @@ public class ImageService {
         imageRepository.deleteAllByImages(trash);
     }
 
-//    @Scheduled(fixedRate = 1000 * 60 * 15) // 15분마다 실행
-//    public void deleteUnusedImages() {
-//        Set<Image> imagesEditedBefore = imageRepository.findImagesEditedBefore(ZonedDateTime.now().minusDays(1));
-//        if (imagesEditedBefore.isEmpty()) return;
-//        minioService.deleteImages(imagesEditedBefore.stream().map(Image::getFileName).collect(Collectors.toSet()));
-//        imageRepository.deleteAllByImages(imagesEditedBefore);
-//    }
-
     public String getSrcUrl(String fileName) {
         Image image = imageRepository.findByFileName(fileName);
         if (image == null) {
