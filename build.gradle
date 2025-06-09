@@ -30,8 +30,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis' //redis
 
-    // https://mvnrepository.com/artifact/io.hypersistence/hypersistence-utils-hibernate-60
-    implementation 'io.hypersistence:hypersistence-utils-hibernate-60:3.9.4'
+    // https://mvnrepository.com/artifact/io.hypersistence/hypersistence-utils-hibernate-63
+    implementation 'io.hypersistence:hypersistence-utils-hibernate-63:3.9.11'
 
     // lombok
     compileOnly 'org.projectlombok:lombok'
@@ -47,10 +47,10 @@ dependencies {
     runtimeOnly 'com.mysql:mysql-connector-j'
 
 
-
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testRuntimeOnly 'com.h2database:h2'
 }
 
 tasks.named('test') {
