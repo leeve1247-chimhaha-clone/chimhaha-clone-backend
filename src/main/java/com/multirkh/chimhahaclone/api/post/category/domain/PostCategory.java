@@ -23,7 +23,7 @@ public class PostCategory {
     @Column(nullable = false)
     private Integer level;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name="`key`")
     private String key;
 
     @Column(name = "korean")
