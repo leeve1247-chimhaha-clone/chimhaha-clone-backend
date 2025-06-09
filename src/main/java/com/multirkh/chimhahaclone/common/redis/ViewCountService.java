@@ -29,27 +29,24 @@ public class ViewCountService {
     }
 
     // 주기적으로 DB에 조회수를 반영하는 메소드
-
     @Scheduled(fixedRate = 3000) // 1초마다 실행
     public void syncViewCountsToDB() {
         // log.info("syncViewCountsToDB() 실행");
         Set<String> keys = redisTemplate.keys("post:views:*");
-        if (keys != null) {
-            for (String key : keys) {
-                Long contentId = Long.valueOf(key.split(":")[2]);
-                Integer viewCount = redisTemplate.opsForValue().get(key);
-                // log.info("key = {}, viewCount = {}, contendId = {}", key, viewCount, contentId);
+        for (String key : keys) {
+            Long contentId = Long.valueOf(key.split(":")[2]);
+            Integer viewCount = redisTemplate.opsForValue().get(key);
+            // log.info("key = {}, viewCount = {}, contendId = {}", key, viewCount, contentId);
 
-                if (viewCount != null) {
-                    Post post = postRepository.findById(contentId).orElse(null);
-                    if (post == null) {
-                        redisTemplate.delete(key);
-                        continue;
-                    }
-                    post.setViews(post.getViews() + viewCount);
-                    postRepository.save(post);
-                    redisTemplate.delete(key); // DB에 반영한 후 Redis 에서 제거
+            if (viewCount != null) {
+                Post post = postRepository.findById(contentId).orElse(null);
+                if (post == null) {
+                    redisTemplate.delete(key);
+                    continue;
                 }
+                post.setViews(post.getViews() + viewCount);
+                postRepository.save(post);
+                redisTemplate.delete(key); // DB에 반영한 후 Redis 에서 제거
             }
         }
     }
