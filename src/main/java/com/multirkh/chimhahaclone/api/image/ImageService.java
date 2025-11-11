@@ -45,8 +45,8 @@ public class ImageService {
 
     public PresignedUrlDTO getPresignedUrl() {
         String randomImageName = IdGenerator.generateUniqueId();
-        if (imageRepository.findByFileName(randomImageName) != null) {
-            return getPresignedUrl();
+        while (imageRepository.findByFileName(randomImageName) != null) {
+            randomImageName = IdGenerator.generateUniqueId();
         }
         return new PresignedUrlDTO(minioService.getPresignedUrl(randomImageName), randomImageName);
     }
