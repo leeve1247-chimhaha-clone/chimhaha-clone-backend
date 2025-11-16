@@ -41,7 +41,7 @@ dependencies {
     implementation 'net.coobird:thumbnailator:0.4.20'
 
     // https://mvnrepository.com/artifact/io.minio/minio
-    implementation 'io.minio:minio:8.5.17'
+    implementation 'io.minio:minio:8.6.0'
 
     // mysql
     runtimeOnly 'com.mysql:mysql-connector-j'
