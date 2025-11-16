@@ -1,27 +1,38 @@
 package com.multirkh.chimhahaclone.common.minio;
 
 import com.multirkh.chimhahaclone.api.image.resize.ImageResizerService;
-import io.minio.*;
+import io.minio.GetObjectArgs;
+import io.minio.GetPresignedObjectUrlArgs;
+import io.minio.MinioClient;
+import io.minio.PutObjectArgs;
+import io.minio.RemoveObjectArgs;
+import io.minio.RemoveObjectsArgs;
+import io.minio.Result;
+import io.minio.StatObjectArgs;
+import io.minio.StatObjectResponse;
 import io.minio.http.Method;
 import io.minio.messages.DeleteError;
 import io.minio.messages.DeleteObject;
+import java.io.InputStream;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MinioService {
     private final ImageResizerService imageResizerService;
+    private final MinioClient minioClient;
     @Value("${minio.bucket-name}")
     private String minioBucketName;
     @Value("${minio.thumbnail-bucket-name}")
     private String thumbnailBucketName;
-    private final MinioClient minioClient;
 
     public String getPresignedUrl(String randomImageName) {
         try {
@@ -32,7 +43,7 @@ public class MinioService {
                                     .bucket(minioBucketName)
                                     .object(randomImageName)
                                     .expiry(15, TimeUnit.MINUTES)
-                                    .build()).replace("http://minio-container:9000/","");
+                                    .build());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -100,7 +111,7 @@ public class MinioService {
     }
 
     public void deleteThumbnail(String fileName) {
-        try{
+        try {
             minioClient.removeObject(
                     RemoveObjectArgs.builder()
                             .bucket(thumbnailBucketName)
@@ -113,20 +124,21 @@ public class MinioService {
 
     public String createOrRenewUrl(String fileName) {
         try {
-            return minioClient
+            String presignedObjectUrl = minioClient
                     .getPresignedObjectUrl(
                             GetPresignedObjectUrlArgs.builder()
                                     .method(Method.GET)
                                     .bucket(minioBucketName)
                                     .object(fileName)
                                     .expiry(7, TimeUnit.DAYS)
-                                    .build()).replace("http://minio-container:9000/","");
+                                    .build());
+            return presignedObjectUrl;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    public String createOrRenewThumbNailUrl(String fileName){
+    public String createOrRenewThumbNailUrl(String fileName) {
         try {
             return minioClient
                     .getPresignedObjectUrl(
@@ -135,14 +147,14 @@ public class MinioService {
                                     .bucket(thumbnailBucketName)
                                     .object(fileName)
                                     .expiry(7, TimeUnit.DAYS)
-                                    .build()).replace("http://minio-container:9000/","");
+                                    .build()).replace("http://minio-container:9000/", "");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    public String getType(String fileName){
-        try{
+    public String getType(String fileName) {
+        try {
             StatObjectResponse statObjectResponse = minioClient
                     .statObject(StatObjectArgs
                             .builder()
