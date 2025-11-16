@@ -5,5 +5,5 @@ ARG DEPENDENCY=build/dependency
 COPY ${DEPENDENCY}/BOOT-INF/lib /app/lib
 COPY ${DEPENDENCY}/META-INF /app/META-INF
 COPY ${DEPENDENCY}/BOOT-INF/classes /app
-copy ./credentials/config.properties ./extra/config.properties
+copy ./configs/config.properties ./configs/config.properties
 ENTRYPOINT ["java","-cp","app:app/lib/*","com.multirkh.chimhahaclone.ChimhahaCloneApplication"]
