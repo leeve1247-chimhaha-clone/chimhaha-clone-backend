@@ -147,7 +147,7 @@ public class MinioService {
                                     .bucket(thumbnailBucketName)
                                     .object(fileName)
                                     .expiry(7, TimeUnit.DAYS)
-                                    .build()).replace("http://minio-container:9000/", "");
+                                    .build());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

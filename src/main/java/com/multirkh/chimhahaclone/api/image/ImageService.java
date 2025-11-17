@@ -144,7 +144,7 @@ public class ImageService {
             if (typeNode != null && typeNode.isTextual() && "image".equals(typeNode.asText())) {
                 if (objNode.has("altText") && objNode.has("src")) {
                     String srcUrl = getSrcUrl(objNode.get("altText").asText());
-                    objNode.put("src", minioPublicUrl + "/" + srcUrl);
+                    objNode.put("src", srcUrl);
                 }
             }
             objNode.fieldNames().forEachRemaining(fieldName -> {
