@@ -19,12 +19,12 @@ public class ImageController {
     }
 
     @GetMapping("/get/src-url")
-    public String getSrcUrl(@RequestParam("filename") String fileName ){
+    public String getSrcUrl(@RequestParam("filename") String fileName) {
         return imageService.getSrcUrl(fileName);
     }
 
     @GetMapping("/get/thumbnail-src-url")
-    public String getThumbnailSrcUrl(@RequestParam("filename") String fileName ) {
+    public String getThumbnailSrcUrl(@RequestParam("filename") String fileName) {
         return imageService.getThumbnailSrcUrl(fileName);
     }
 }

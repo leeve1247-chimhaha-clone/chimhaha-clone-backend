@@ -11,7 +11,7 @@ public class DBCleanupTask {
     private final PostRepository postRepository;
 
     @Scheduled(cron = "0 0 0 * * *")
-    public void cleanUpPost(){
+    public void cleanUpPost() {
         postRepository.deleteAllByStatus_Deleted();
     }
 }

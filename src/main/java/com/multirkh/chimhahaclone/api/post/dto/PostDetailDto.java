@@ -3,9 +3,8 @@ package com.multirkh.chimhahaclone.api.post.dto;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.multirkh.chimhahaclone.api.post.domain.Post;
 import com.multirkh.chimhahaclone.api.post.domain.PostStatus;
-import lombok.Getter;
-
 import java.time.ZonedDateTime;
+import lombok.Getter;
 
 @Getter
 public class PostDetailDto {

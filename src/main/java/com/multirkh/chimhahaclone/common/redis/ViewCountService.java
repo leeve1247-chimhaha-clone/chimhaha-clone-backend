@@ -1,13 +1,12 @@
 package com.multirkh.chimhahaclone.common.redis;
 
-import com.multirkh.chimhahaclone.api.post.domain.Post;
 import com.multirkh.chimhahaclone.api.post.PostRepository;
+import com.multirkh.chimhahaclone.api.post.domain.Post;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-
-import java.util.Set;
 
 @Slf4j
 @Service

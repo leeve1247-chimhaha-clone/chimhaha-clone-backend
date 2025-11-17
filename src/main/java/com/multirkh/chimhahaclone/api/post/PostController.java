@@ -1,19 +1,22 @@
 package com.multirkh.chimhahaclone.api.post;
 
-import com.multirkh.chimhahaclone.api.post.likes.dto.LikeRequest;
+import com.multirkh.chimhahaclone.api.post.domain.Post;
 import com.multirkh.chimhahaclone.api.post.dto.PostDetailDto;
 import com.multirkh.chimhahaclone.api.post.dto.PostListComponentDto;
 import com.multirkh.chimhahaclone.api.post.dto.PostReceived;
-import com.multirkh.chimhahaclone.api.post.domain.Post;
+import com.multirkh.chimhahaclone.api.post.likes.dto.LikeRequest;
 import com.multirkh.chimhahaclone.common.redis.ViewCountService;
 import jakarta.annotation.security.RolesAllowed;
+import java.util.Collection;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.Collection;
-import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,8 +31,10 @@ public class PostController {
     }
 
     @GetMapping("/posts")
-    public List<PostListComponentDto> getPosts(@RequestParam(name="category", required = false) String category) {
-        if (category == null || category.equalsIgnoreCase("all")){return postService.findPostList();}
+    public List<PostListComponentDto> getPosts(@RequestParam(name = "category", required = false) String category) {
+        if (category == null || category.equalsIgnoreCase("all")) {
+            return postService.findPostList();
+        }
         return postService.findPostList(category);
     }
 
@@ -43,7 +48,8 @@ public class PostController {
     public String createPost(
             @RequestBody PostReceived request
     ) {
-        Collection<? extends GrantedAuthority> authorities = SecurityContextHolder.getContext().getAuthentication().getAuthorities();
+        Collection<? extends GrantedAuthority> authorities = SecurityContextHolder.getContext().getAuthentication()
+                .getAuthorities();
         postService.validateCreatePost(request);
         return postService.createPost(request);
     }

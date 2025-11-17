@@ -1,28 +1,32 @@
 package com.multirkh.chimhahaclone.api.comment;
 
+import static com.multirkh.chimhahaclone.common.util.UtilStringJsonConverter.jsonNodeOf;
+
 import com.fasterxml.jackson.databind.JsonNode;
+import com.multirkh.chimhahaclone.api.comment.domain.Comment;
+import com.multirkh.chimhahaclone.api.comment.dtos.CommentDto;
 import com.multirkh.chimhahaclone.api.comment.dtos.CommentPage;
 import com.multirkh.chimhahaclone.api.comment.dtos.CommentPageRequest;
-import com.multirkh.chimhahaclone.api.comment.dtos.CommentDto;
 import com.multirkh.chimhahaclone.api.comment.dtos.CommentReceived;
-import com.multirkh.chimhahaclone.api.comment.domain.Comment;
-import com.multirkh.chimhahaclone.api.comment.likes.domain.CommentLikesUser;
-import com.multirkh.chimhahaclone.api.post.domain.Post;
-import com.multirkh.chimhahaclone.api.user.domain.User;
-import com.multirkh.chimhahaclone.api.post.domain.PostStatus;
 import com.multirkh.chimhahaclone.api.comment.likes.CommentLikesUserRepository;
+import com.multirkh.chimhahaclone.api.comment.likes.domain.CommentLikesUser;
 import com.multirkh.chimhahaclone.api.post.PostRepository;
+import com.multirkh.chimhahaclone.api.post.domain.Post;
+import com.multirkh.chimhahaclone.api.post.domain.PostStatus;
 import com.multirkh.chimhahaclone.api.user.UserRepository;
+import com.multirkh.chimhahaclone.api.user.domain.User;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static com.multirkh.chimhahaclone.common.util.UtilStringJsonConverter.jsonNodeOf;
 
 @Slf4j
 @Service
@@ -35,10 +39,42 @@ public class CommentService {
     private final PostRepository postRepository;
     private final Integer numCommentsPerPage = 10;
 
+    private static void addCommentRepliesCount(@NotNull Comment comment) {
+        Comment parentComment = comment.getParent();
+        while (parentComment != null) {
+            Long repliesCount = parentComment.getReplies_count();
+            if (repliesCount == null) {
+                repliesCount = 0L;
+            }
+            parentComment.setReplies_count(repliesCount + 1L);
+            parentComment = parentComment.getParent();
+        }
+    }
+
+    private static void subtractCommentRepliesCount(@NotNull Comment comment) {
+        Comment parentComment = comment.getParent();
+        Long repliesCount = comment.getReplies_count();
+        if (repliesCount == null) {
+            repliesCount = 1L;
+        } else {
+            repliesCount = repliesCount + 1L;
+        }
+        while (parentComment != null) {
+            long updatedRepliesCount = parentComment.getReplies_count() - repliesCount;
+            if (updatedRepliesCount == 0L) {
+                parentComment.setReplies_count(null);
+            } else {
+                parentComment.setReplies_count(updatedRepliesCount);
+            }
+            parentComment = parentComment.getParent();
+        }
+    }
+
     public Comment createComment(CommentReceived request) {
         User user = userRepository.findByUserAuthId(SecurityContextHolder.getContext().getAuthentication().getName());
         JsonNode jsonContent = request.getContent();
-        Post post = postRepository.findById(request.getPostId()).orElseThrow(() -> new IllegalArgumentException("post not found"));
+        Post post = postRepository.findById(request.getPostId())
+                .orElseThrow(() -> new IllegalArgumentException("post not found"));
 
         Comment comment;
         if (request.getParentCommentId() != null) {
@@ -54,8 +90,9 @@ public class CommentService {
     public Comment updateComment(CommentReceived request) {
         User user = userRepository.findByUserAuthId(SecurityContextHolder.getContext().getAuthentication().getName());
         Comment comment = commentRepository.findById(request.getParentCommentId()).orElseThrow();
-        if (!comment.getUser().getId().equals(user.getId()))
+        if (!comment.getUser().getId().equals(user.getId())) {
             throw new IllegalArgumentException("You are not the owner of this comment");
+        }
         comment.setContent(request.getContent());
         comment.setStatus(PostStatus.EDITED);
         return commentRepository.save(comment);
@@ -63,41 +100,22 @@ public class CommentService {
 
     public Comment deleteComment(CommentReceived request) {
         User user = userRepository.findByUserAuthId(SecurityContextHolder.getContext().getAuthentication().getName());
-        Comment comment = commentRepository.findById(request.getParentCommentId()).orElseThrow(() -> new IllegalArgumentException("comment not found"));
-        if (!comment.getUser().getId().equals(user.getId()))
+        Comment comment = commentRepository.findById(request.getParentCommentId())
+                .orElseThrow(() -> new IllegalArgumentException("comment not found"));
+        if (!comment.getUser().getId().equals(user.getId())) {
             throw new IllegalArgumentException("You are not the owner of this comment");
-        comment.setContent(jsonNodeOf("{\"root\": {\"type\": \"root\", \"format\": \"\", \"indent\": 0, \"version\": 1, \"children\": [{\"type\": \"paragraph\", \"format\": \"\", \"indent\": 0, \"version\": 1, \"children\": [{\"mode\": \"normal\", \"text\": \"삭제된 댓글입니다.\", \"type\": \"text\", \"style\": \"\", \"detail\": 0, \"format\": 0, \"version\": 1}], \"direction\": \"ltr\", \"textStyle\": \"\", \"textFormat\": 0}], \"direction\": \"ltr\"}}"));
+        }
+        comment.setContent(jsonNodeOf(
+                "{\"root\": {\"type\": \"root\", \"format\": \"\", \"indent\": 0, \"version\": 1, \"children\": [{\"type\": \"paragraph\", \"format\": \"\", \"indent\": 0, \"version\": 1, \"children\": [{\"mode\": \"normal\", \"text\": \"삭제된 댓글입니다.\", \"type\": \"text\", \"style\": \"\", \"detail\": 0, \"format\": 0, \"version\": 1}], \"direction\": \"ltr\", \"textStyle\": \"\", \"textFormat\": 0}], \"direction\": \"ltr\"}}"));
         comment.setStatus(PostStatus.DELETED);
         subtractCommentRepliesCount(comment);
         return commentRepository.save(comment);
     }
 
-    private static void addCommentRepliesCount(@NotNull Comment comment) {
-        Comment parentComment = comment.getParent();
-        while (parentComment != null) {
-            Long repliesCount = parentComment.getReplies_count();
-            if (repliesCount == null) repliesCount = 0L;
-            parentComment.setReplies_count( repliesCount + 1L);
-            parentComment = parentComment.getParent();
-        }
-    }
-
-    private static void subtractCommentRepliesCount(@NotNull Comment comment) {
-        Comment parentComment = comment.getParent();
-        Long repliesCount = comment.getReplies_count();
-        if (repliesCount == null) repliesCount = 1L;
-        else repliesCount = repliesCount + 1L;
-        while (parentComment != null) {
-            long updatedRepliesCount = parentComment.getReplies_count() - repliesCount;
-            if (updatedRepliesCount == 0L) parentComment.setReplies_count(null);
-            else parentComment.setReplies_count(updatedRepliesCount);
-            parentComment = parentComment.getParent();
-        }
-    }
-
     public Integer updateCommentLikes(Map<String, Long> body) {
         User user = userRepository.findByUserAuthId(SecurityContextHolder.getContext().getAuthentication().getName());
-        Comment comment = commentRepository.findById(body.get("commentId")).orElseThrow(() -> new IllegalArgumentException("post not found"));
+        Comment comment = commentRepository.findById(body.get("commentId"))
+                .orElseThrow(() -> new IllegalArgumentException("post not found"));
         CommentLikesUser commentLikesUser = commentLikesUserRepository.findByCommentAndUser(comment, user);
         if (commentLikesUser == null) {
             comment.setLikes(comment.getLikes() + 1);
@@ -121,7 +139,9 @@ public class CommentService {
     }
 
     public void validateCommentForm(CommentReceived request) {
-        if (request.getContent() == null) throw new IllegalArgumentException("content is null");
+        if (request.getContent() == null) {
+            throw new IllegalArgumentException("content is null");
+        }
     }
 
     public List<CommentDto> getCommentTree(@NotNull CommentPageRequest request) {
@@ -134,8 +154,8 @@ public class CommentService {
         if (request.getCommentId() != null) {
             CommentPage commentPage = commentPageList
                     .stream().filter(cp ->
-                            cp.getStartId() <= request.getCommentId() &&
-                                    cp.getEndId() >= request.getCommentId()
+                            cp.startId() <= request.getCommentId() &&
+                                    cp.endId() >= request.getCommentId()
                     )
                     .findFirst().orElseThrow(() -> new IllegalArgumentException("comment not found"));
             return getCommentDTOList(request, commentPage);
@@ -143,7 +163,9 @@ public class CommentService {
 
         if (request.getPageNum() != null) {
             int pageIndex = Math.toIntExact(request.getPageNum()) - 1;
-            if (pageIndex < 0 || pageIndex >= commentPageList.size()) return new ArrayList<>();
+            if (pageIndex < 0 || pageIndex >= commentPageList.size()) {
+                return new ArrayList<>();
+            }
             CommentPage commentPage = commentPageList.get(pageIndex);
             return getCommentDTOList(request, commentPage);
         }
@@ -154,7 +176,8 @@ public class CommentService {
 
     @NotNull
     private List<CommentDto> getCommentDTOList(@NotNull CommentPageRequest request, CommentPage commentPage) {
-        List<Comment> comments = commentRepository.getRecursiveCommentsByStartEndId(commentPage.getStartId(), commentPage.getEndId(), request.getPostId());
+        List<Comment> comments = commentRepository.getRecursiveCommentsByStartEndId(commentPage.startId(),
+                commentPage.endId(), request.getPostId());
         List<Comment> selfLiked = commentRepository.getSelfLiked(comments);
         Set<Long> selfLikedId = selfLiked.stream().map(Comment::getId).collect(Collectors.toSet());
         List<CommentDto> commentDtoFlat = comments.stream().map(c -> {
@@ -164,25 +187,30 @@ public class CommentService {
                 return new CommentDto(c, false);
             }
         }).toList();
-        Map<Long, CommentDto> commentDtoMap = commentDtoFlat.stream().collect(Collectors.toMap(CommentDto::getId, c -> c));
+        Map<Long, CommentDto> commentDtoMap = commentDtoFlat.stream()
+                .collect(Collectors.toMap(CommentDto::getId, c -> c));
 
         for (CommentDto commentDto : commentDtoFlat) {
             if (commentDto.getParentId() != null) {
                 commentDtoMap.get(commentDto.getParentId()).getChildren().add(commentDto);
             }
         }
-        return commentDtoFlat.stream().filter(commentDto -> commentDto.getParentId() == null).collect(Collectors.toList());
+        return commentDtoFlat.stream().filter(commentDto -> commentDto.getParentId() == null)
+                .collect(Collectors.toList());
     }
 
     public Integer getCommentPageSize(Long postId) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("post not found"));
         Integer commentsSum = commentRepository.countCommentsByPost(post);
-        if (commentsSum == null) commentsSum = 0;
+        if (commentsSum == null) {
+            commentsSum = 0;
+        }
         return (int) Math.ceil((double) commentsSum / numCommentsPerPage);
     }
 
     public Integer getCommentPage(@NotNull Comment comment) {
-        List<CommentPage> commentPageList = commentRepository.getCommentPages(comment.getPost().getId(), numCommentsPerPage);
+        List<CommentPage> commentPageList = commentRepository.getCommentPages(comment.getPost().getId(),
+                numCommentsPerPage);
         int pageNum = getPageNum(comment, commentPageList);
         if (pageNum < 1) {
             throw new IllegalArgumentException("comment not found in comment pages");
@@ -201,10 +229,10 @@ public class CommentService {
     }
 
     private Integer findIntervalIndexForDeleted(List<CommentPage> commentPageList, Long commentId) {
-        Comparator<CommentPage> comparator = Comparator.comparing(CommentPage::getStartId);
+        Comparator<CommentPage> comparator = Comparator.comparing(CommentPage::startId);
         int i = Collections.binarySearch(commentPageList, new CommentPage(commentId, commentId), comparator);
-        if ( i >= 1){
-            return i-1;
+        if (i >= 1) {
+            return i - 1;
         } else {
             int nearestPoint = -i;
             return Math.max(nearestPoint - 2, 0);
@@ -213,8 +241,12 @@ public class CommentService {
 
     private Integer findIntervalIndex(List<CommentPage> commentPageList, Long commentId) {
         Comparator<CommentPage> comparator = (index1, index2) -> {
-            if (index1.getEndId() < index2.getStartId()) return -1;
-            if (index1.getStartId() > index2.getEndId()) return 1;
+            if (index1.endId() < index2.startId()) {
+                return -1;
+            }
+            if (index1.startId() > index2.endId()) {
+                return 1;
+            }
             return 0;
         };
         return Collections.binarySearch(commentPageList, new CommentPage(commentId, commentId), comparator);

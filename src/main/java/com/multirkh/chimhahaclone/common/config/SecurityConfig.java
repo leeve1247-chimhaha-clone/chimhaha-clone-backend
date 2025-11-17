@@ -1,8 +1,10 @@
 package com.multirkh.chimhahaclone.common.config;
 
+import java.util.Collections;
+import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -11,9 +13,6 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
-
-import java.util.Collections;
-import java.util.List;
 
 @Configuration
 public class SecurityConfig {

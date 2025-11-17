@@ -1,13 +1,12 @@
 package com.multirkh.chimhahaclone.api.post.category;
 
-import com.multirkh.chimhahaclone.api.post.category.dto.PostCategoryDto;
 import com.multirkh.chimhahaclone.api.post.category.domain.PostCategory;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
+import com.multirkh.chimhahaclone.api.post.category.dto.PostCategoryDto;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -18,7 +17,8 @@ public class PostCategoryService {
     public List<PostCategoryDto> findAllTree() {
         List<PostCategory> postCategories = postCategoryRepository.findByLevelLessThanEqual(2);
         List<PostCategoryDto> postCategoryDtoList = postCategories.stream().map(PostCategoryDto::new).toList();
-        Map<Long, PostCategoryDto> postCategoryDtoMap = postCategoryDtoList.stream().collect(Collectors.toMap(PostCategoryDto::getId, c -> c));
+        Map<Long, PostCategoryDto> postCategoryDtoMap = postCategoryDtoList.stream()
+                .collect(Collectors.toMap(PostCategoryDto::getId, c -> c));
         for (PostCategoryDto postCategoryDto : postCategoryDtoList) {
             if (postCategoryDto.getParentId() != null) {
                 postCategoryDtoMap.get(postCategoryDto.getParentId()).getChildren().add(postCategoryDto);

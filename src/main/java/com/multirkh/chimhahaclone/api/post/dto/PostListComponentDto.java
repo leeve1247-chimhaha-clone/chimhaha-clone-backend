@@ -3,9 +3,8 @@ package com.multirkh.chimhahaclone.api.post.dto;
 
 import com.multirkh.chimhahaclone.api.post.domain.Post;
 import com.multirkh.chimhahaclone.api.post.domain.PostStatus;
-import lombok.Getter;
-
 import java.time.ZonedDateTime;
+import lombok.Getter;
 
 @Getter
 public class PostListComponentDto {
@@ -20,7 +19,7 @@ public class PostListComponentDto {
     private final String titleImageFileName;
     private final Integer commentsCount;
 
-    public PostListComponentDto(Post post){
+    public PostListComponentDto(Post post) {
         this.title = post.getTitle();
         this.username = post.getUser().getUserName();
         this.status = post.getStatus();
