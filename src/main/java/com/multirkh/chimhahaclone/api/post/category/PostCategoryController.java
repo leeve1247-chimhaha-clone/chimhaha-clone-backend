@@ -1,11 +1,10 @@
 package com.multirkh.chimhahaclone.api.post.category;
 
 import com.multirkh.chimhahaclone.api.post.category.dto.PostCategoryDto;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor

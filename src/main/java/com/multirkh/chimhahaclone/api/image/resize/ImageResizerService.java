@@ -1,13 +1,12 @@
 package com.multirkh.chimhahaclone.api.image.resize;
 
-import net.coobird.thumbnailator.Thumbnailator;
-import org.jetbrains.annotations.NotNull;
-import org.springframework.stereotype.Service;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import net.coobird.thumbnailator.Thumbnailator;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.stereotype.Service;
 
 @Service
 public class ImageResizerService {
@@ -17,7 +16,7 @@ public class ImageResizerService {
     @NotNull
     public InputStream createResizedImage(InputStream rawImage) throws IOException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        Thumbnailator.createThumbnail(rawImage,outputStream, WIDTH, HEIGHT);
+        Thumbnailator.createThumbnail(rawImage, outputStream, WIDTH, HEIGHT);
         byte[] bytes = outputStream.toByteArray();
         return new ByteArrayInputStream(bytes);
     }

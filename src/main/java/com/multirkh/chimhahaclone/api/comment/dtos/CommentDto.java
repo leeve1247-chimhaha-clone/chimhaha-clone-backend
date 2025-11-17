@@ -4,11 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.multirkh.chimhahaclone.api.comment.domain.Comment;
 import com.multirkh.chimhahaclone.api.post.domain.PostStatus;
-import lombok.Getter;
-
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Getter;
 
 @Getter
 public class CommentDto {

@@ -83,7 +83,6 @@ public class MinioConfig {
         } catch (Exception e) {
             throw new RuntimeException("Minio Client Error");
         }
-
     }
 
     private CORSConfiguration getCorsConfiguration() {

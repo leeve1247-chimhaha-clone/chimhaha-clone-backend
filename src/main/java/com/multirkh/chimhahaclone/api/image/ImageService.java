@@ -2,14 +2,19 @@ package com.multirkh.chimhahaclone.api.image;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.multirkh.chimhahaclone.api.post.dto.PostReceived;
 import com.multirkh.chimhahaclone.api.image.domain.Image;
 import com.multirkh.chimhahaclone.api.image.dtos.PresignedUrlDTO;
 import com.multirkh.chimhahaclone.api.post.domain.Post;
+import com.multirkh.chimhahaclone.api.post.dto.PostReceived;
+import com.multirkh.chimhahaclone.api.post.image.PostImageRepository;
 import com.multirkh.chimhahaclone.api.post.image.domain.PostImage;
 import com.multirkh.chimhahaclone.common.minio.MinioService;
-import com.multirkh.chimhahaclone.api.post.image.PostImageRepository;
 import com.multirkh.chimhahaclone.common.util.IdGenerator;
+import java.time.ZonedDateTime;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -17,12 +22,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.ZonedDateTime;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -52,13 +51,17 @@ public class ImageService {
     }
 
     public Set<String> getImageFileNameSet(JsonNode jsonContent) {
-        return jsonContent.findParents("type").stream().filter(jsonNode -> jsonNode.get("type").asText().equals("image")).map(jsonNode -> jsonNode.get("altText").asText()).collect(Collectors.toSet());
+        return jsonContent.findParents("type").stream()
+                .filter(jsonNode -> jsonNode.get("type").asText().equals("image"))
+                .map(jsonNode -> jsonNode.get("altText").asText()).collect(Collectors.toSet());
     }
 
     @Transactional
     public void createPostImages(Post post) {
         Set<String> newImageNames = getImageFileNameSet(post.getJsonContent());
-        if (newImageNames.isEmpty()) return;
+        if (newImageNames.isEmpty()) {
+            return;
+        }
         Set<Image> newImages = imageRepository.findByFileNames(newImageNames);
         createPostImages(post, newImages);
     }
@@ -66,7 +69,8 @@ public class ImageService {
     @Transactional
     public void updatePostImage(@NotNull Post post, @NotNull PostReceived request) {
         Set<PostImage> postImages = post.getPostImages();
-        Set<String> prevImageFileNameSet = postImages.stream().map(postImage -> postImage.getImage().getFileName()).collect(Collectors.toSet());
+        Set<String> prevImageFileNameSet = postImages.stream().map(postImage -> postImage.getImage().getFileName())
+                .collect(Collectors.toSet());
         Set<String> updatedImageFileNameSet = getImageFileNameSet(request.getContent());
 
         Set<String> newImageNames = new HashSet<>(updatedImageFileNameSet);
@@ -108,7 +112,7 @@ public class ImageService {
         Set<Image> trash = new HashSet<>();
         for (Image toBeDeleteImage : toBeDeleteImages) {
             toBeDeleteImage.getPostImages().removeAll(toBeDeletePostImages);
-            if (toBeDeleteImage.getPostImages().isEmpty()){
+            if (toBeDeleteImage.getPostImages().isEmpty()) {
                 trash.add(toBeDeleteImage);
             }
         }
@@ -158,7 +162,8 @@ public class ImageService {
     }
 
     private String getThumbnailImageFileName(JsonNode content) {
-        Optional<String> first = content.findParents("type").stream().filter(t -> t.get("type").asText().equals("image")).map(t -> t.get("altText").asText()).findFirst();
+        Optional<String> first = content.findParents("type").stream()
+                .filter(t -> t.get("type").asText().equals("image")).map(t -> t.get("altText").asText()).findFirst();
         return first.orElse(null);
     }
 
@@ -173,7 +178,9 @@ public class ImageService {
     }
 
     public Image getOrCreateThumbnail(Image rawImage) {
-        if (rawImage.getThumbNailImage() != null) return rawImage.getThumbNailImage();
+        if (rawImage.getThumbNailImage() != null) {
+            return rawImage.getThumbNailImage();
+        }
         String srcUrl = minioService.createThumbnail(rawImage.getFileName());
         Image thumbNailImage = new Image(rawImage, srcUrl, ZonedDateTime.now().plusHours(167));
         rawImage.setThumbNailImage(thumbNailImage);
@@ -183,7 +190,9 @@ public class ImageService {
     @Transactional
     public void createThumbnailImage(@NotNull Post post) {
         String titleImageFileName = getThumbnailImageFileName(post.getJsonContent());
-        if (titleImageFileName == null) return;
+        if (titleImageFileName == null) {
+            return;
+        }
         Image rawImage = imageRepository.findByFileName(titleImageFileName);
         Image thumbnailImage = getOrCreateThumbnail(rawImage);
         post.addThumbNailImage(thumbnailImage);
@@ -204,7 +213,6 @@ public class ImageService {
             }
             return;
         }
-
 
         // Same (null)
         if (oldThumbNailImage == null && newThumbNailImageFileName == null) {
@@ -239,7 +247,9 @@ public class ImageService {
     @Transactional
     public void deleteThumbnailImage(@NotNull Post post) {
         Image thumbNailImage = post.getThumbNailImage();
-        if (thumbNailImage == null) return;
+        if (thumbNailImage == null) {
+            return;
+        }
         post.removeThumbNailImage();
         if (thumbNailImage.getThumbNailedPost().isEmpty()) {
             minioService.deleteThumbnail(thumbNailImage.getRawImage().getFileName());

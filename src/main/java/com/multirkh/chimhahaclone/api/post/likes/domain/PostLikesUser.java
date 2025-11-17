@@ -1,8 +1,15 @@
 package com.multirkh.chimhahaclone.api.post.likes.domain;
 
-import com.multirkh.chimhahaclone.api.user.domain.User;
 import com.multirkh.chimhahaclone.api.post.domain.Post;
-import jakarta.persistence.*;
+import com.multirkh.chimhahaclone.api.user.domain.User;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

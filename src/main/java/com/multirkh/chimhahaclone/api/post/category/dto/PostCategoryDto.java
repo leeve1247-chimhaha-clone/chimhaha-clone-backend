@@ -2,10 +2,9 @@ package com.multirkh.chimhahaclone.api.post.category.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.multirkh.chimhahaclone.api.post.category.domain.PostCategory;
-import lombok.Getter;
-
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Getter;
 
 @Getter
 public class PostCategoryDto {
