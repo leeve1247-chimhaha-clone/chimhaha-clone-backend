@@ -32,7 +32,7 @@ public class PostController {
 
     @GetMapping("/posts")
     public List<PostListComponentDto> getPosts(@RequestParam(name = "category", required = false) String category) {
-        if (category == null || category.equalsIgnoreCase("all")) {
+        if (category.isBlank() || category.equalsIgnoreCase("all")) {
             return postService.findPostList();
         }
         return postService.findPostList(category);

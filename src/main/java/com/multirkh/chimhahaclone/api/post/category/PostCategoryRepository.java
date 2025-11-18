@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface PostCategoryRepository extends JpaRepository<PostCategory, Long> {
     PostCategory findByKey(String key);
+    List<PostCategory> findAllByKey(String key);
 
     List<PostCategory> findByLevelLessThanEqual(Integer level);
 

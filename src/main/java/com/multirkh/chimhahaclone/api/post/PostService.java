@@ -19,10 +19,12 @@ import com.multirkh.chimhahaclone.api.user.domain.User;
 import com.multirkh.chimhahaclone.common.exception.FindDeletedPostException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -37,7 +39,7 @@ public class PostService {
     public String createPost(PostReceived request) {
         User user = userService.getUser();
         String title = request.getTitle();
-        PostCategory postCategory = postCategoryRepository.findByKey(request.getPostCategoryKey());
+        PostCategory postCategory = findLastIdOfTheCategory(request.getPostCategoryKey());
         JsonNode jsonContent = request.getContent();
 
         Post post = postRepository.save(new Post(title, jsonContent, user, postCategory));
@@ -48,10 +50,21 @@ public class PostService {
         return post.getId().toString();
     }
 
+    private PostCategory findLastIdOfTheCategory(String postCategoryKey) {
+        List<PostCategory> allByKey = postCategoryRepository.findAllByKey(postCategoryKey);
+        PostCategory temp = allByKey.getFirst();
+        for (PostCategory postCategory : allByKey) {
+            if (temp.getId() < postCategory.getId()) {
+                temp = postCategory;
+            }
+        }
+        return temp;
+    }
+
     public String updatePost(PostReceived request) {
         Post post = postRepository.findById(Long.valueOf(request.getPostId())).orElseThrow();
         post.setTitle(request.getTitle());
-        post.setCategory(postCategoryRepository.findByKey(request.getPostCategoryKey()));
+        post.setCategory(findLastIdOfTheCategory(request.getPostCategoryKey()));
         post.setJsonContent(request.getContent());
         Post updatedPost = postRepository.save(post); //postImage not yet updated
 
@@ -128,6 +141,7 @@ public class PostService {
         return postRepository
                 .findAllByOrderByCreatedDate(pageRequest)
                 .stream()
+                .filter(post-> !post.getCategory().getKey().equals("NOTICE"))
                 .map(PostListComponentDto::new)
                 .toList();
     }
