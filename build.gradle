@@ -46,6 +46,9 @@ dependencies {
     // mysql
     runtimeOnly 'com.mysql:mysql-connector-j'
 
+    // https://mvnrepository.com/artifact/com.github.codemonstur/embedded-redis
+    testImplementation 'com.github.codemonstur:embedded-redis:1.4.3'
+
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
