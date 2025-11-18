@@ -1,9 +1,9 @@
 package com.multirkh.chimhahaclone.api.comment.dtos;
 
-import lombok.AllArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 
-@AllArgsConstructor
 public record CommentPage(Long startId, Long endId) {
+    @NotNull
     @Override
     public String toString() {
         return "CommentPage{" +
