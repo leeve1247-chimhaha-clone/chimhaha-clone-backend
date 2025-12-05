@@ -31,16 +31,13 @@ class ChimhahaCloneApplicationTests {
     @Test
     @DisplayName("Embedded Redis에 값을 저장하고 조회할 수 있다")
     void testRedisSaveAndGet() {
-        // given
         String key = "testKey";
         String value = "Hello, Embedded Redis!";
         ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
 
-        // when
         valueOperations.set(key, value);
         String result = valueOperations.get(key);
 
-        // then
         assertThat(result).isEqualTo(value);
     }
 }

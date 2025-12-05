@@ -5,10 +5,11 @@ import com.multirkh.chimhahaclone.api.post.dto.PostDetailDto;
 import com.multirkh.chimhahaclone.api.post.dto.PostListComponentDto;
 import com.multirkh.chimhahaclone.api.post.dto.PostReceived;
 import com.multirkh.chimhahaclone.api.post.likes.dto.LikeRequest;
-import com.multirkh.chimhahaclone.common.redis.ViewCountService;
+import com.multirkh.chimhahaclone.common.redis.PostViewScheduler;
 import jakarta.annotation.security.RolesAllowed;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class PostController {
 
-    private final ViewCountService viewCountService;
+    private final PostViewScheduler postViewScheduler;
     private final PostService postService;
 
     @GetMapping("/")
@@ -38,9 +39,14 @@ public class PostController {
         return postService.findPostList(category);
     }
 
+    @GetMapping("/popular_posts")
+    public List<Map<String, PostListComponentDto>> getPopularPosts(String category) {
+        return postService.findPopularPostList();
+    }
+
     @GetMapping("/posts/detail")
     public PostDetailDto getPosts(@RequestParam(name = "num") Long postNum) {
-        viewCountService.incrementViewCount(postNum);
+        postViewScheduler.incrementViewCount(postNum);
         return postService.findPost(postNum);
     }
 

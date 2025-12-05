@@ -16,10 +16,14 @@ import com.multirkh.chimhahaclone.api.post.likes.dto.LikeRequest;
 import com.multirkh.chimhahaclone.api.user.UserRepository;
 import com.multirkh.chimhahaclone.api.user.UserService;
 import com.multirkh.chimhahaclone.api.user.domain.User;
+import com.multirkh.chimhahaclone.common.config.ZonedDateTimeConfig;
 import com.multirkh.chimhahaclone.common.exception.FindDeletedPostException;
+import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -201,5 +205,8 @@ public class PostService {
         }
     }
 
+    @Cacheable(value = "bestPosts", key = "#type", unless = "#result == null")
+    public List<Map<String, PostListComponentDto>> findPopularPostList() {
 
+    };
 }
