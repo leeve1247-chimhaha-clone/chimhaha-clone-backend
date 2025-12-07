@@ -3,6 +3,7 @@ package com.multirkh.chimhahaclone.api.image;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.multirkh.chimhahaclone.api.image.domain.Image;
+import com.multirkh.chimhahaclone.api.image.dtos.PresignedPostDto;
 import com.multirkh.chimhahaclone.api.image.dtos.PresignedUrlDTO;
 import com.multirkh.chimhahaclone.api.post.domain.Post;
 import com.multirkh.chimhahaclone.api.post.dto.PostReceived;
@@ -12,9 +13,11 @@ import com.multirkh.chimhahaclone.common.minio.MinioService;
 import com.multirkh.chimhahaclone.common.util.IdGenerator;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -22,6 +25,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.MimeType;
 
 @Service
 @Transactional
@@ -33,8 +37,6 @@ public class ImageService {
     private final ImageRepository imageRepository;
     private final MinioService minioService;
     private final PostImageRepository postImageRepository;
-    @Value("${minio.export-url}")
-    private String minioPublicUrl;
 
     public JsonNode applyPresignedUrlToImageSrc(JsonNode jsonContent) {
         JsonNode jsonNode = jsonContent.deepCopy();
@@ -48,6 +50,15 @@ public class ImageService {
             randomImageName = IdGenerator.generateUniqueId();
         }
         return new PresignedUrlDTO(minioService.getPresignedUrl(randomImageName), randomImageName);
+    }
+
+    public PresignedPostDto getPresignedPost(MimeType mimeType){
+        String randomImageName = IdGenerator.generateUniqueId();
+        while (imageRepository.findByFileName(randomImageName) != null) {
+            randomImageName = IdGenerator.generateUniqueId();
+        }
+        String fileName = String.join(".", randomImageName, mimeType.getSubtype());
+        return new PresignedPostDto(minioService.getPresignedPost(fileName), fileName, minioService.getImageEndPointUrl());
     }
 
     public Set<String> getImageFileNameSet(JsonNode jsonContent) {
