@@ -1,10 +1,13 @@
 package com.multirkh.chimhahaclone.common.minio;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.minio.BucketExistsArgs;
 import io.minio.DeleteBucketCorsArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import io.minio.SetBucketCorsArgs;
+import io.minio.SetBucketPolicyArgs;
 import io.minio.messages.CORSConfiguration;
 import io.minio.messages.CORSConfiguration.CORSRule;
 import java.util.Arrays;
@@ -37,6 +40,12 @@ public class MinioConfig {
     @Value("${minio.thumbnail-bucket-name}")
     private String thumbnailBucketName;
 
+    final ObjectMapper objectMapper;
+
+    public MinioConfig(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
     @Bean
     public MinioClient minioClient() {
         MinioClient minioClient = initMinioConfig();
@@ -68,9 +77,41 @@ public class MinioConfig {
                     log.info("Bucket '{}' already exists.", entry.getKey());
                 }
             }
+            initBucketPolicy(minioClient);
             return bucketDoesExists;
         } catch (Exception e) {
             throw new RuntimeException("Error occurred while creating minio client", e);
+        }
+    }
+
+    private String createPublicReadAccessJsonPolicy(String minioBucketName) {
+        try {
+            Map<String, Object> policyMap = Map.of(
+                    "Version", "2012-10-17",
+                    "Statement", List.of(
+                            Map.of(
+                                    "Sid", "PublicReadGetObject",
+                                    "Effect", "Allow",
+                                    "Principal", "*",
+                                    "Action", List.of("s3:GetObject"),
+                                    "Resource", List.of("arn:aws:s3:::" + minioBucketName + "/*")
+                            )
+                    )
+            );
+            return objectMapper.writeValueAsString(policyMap);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    private void initBucketPolicy(MinioClient minioClient) {
+        try {
+            String policyJson = createPublicReadAccessJsonPolicy(minioBucketName);
+            minioClient.setBucketPolicy(
+                    SetBucketPolicyArgs.builder().bucket(minioBucketName).config(policyJson).build());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
