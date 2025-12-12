@@ -1,7 +1,6 @@
 package com.multirkh.chimhahaclone.api.image;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.multirkh.chimhahaclone.api.image.domain.Image;
 import com.multirkh.chimhahaclone.api.image.dtos.PresignedPostDto;
 import com.multirkh.chimhahaclone.api.image.dtos.PresignedUrlDTO;
@@ -11,9 +10,12 @@ import com.multirkh.chimhahaclone.api.post.image.PostImageRepository;
 import com.multirkh.chimhahaclone.api.post.image.domain.PostImage;
 import com.multirkh.chimhahaclone.common.minio.MinioService;
 import com.multirkh.chimhahaclone.common.util.IdGenerator;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -35,11 +37,16 @@ public class ImageService {
     private final MinioService minioService;
     private final PostImageRepository postImageRepository;
 
-    public JsonNode applyPresignedUrlToImageSrc(JsonNode jsonContent) {
-        JsonNode jsonNode = jsonContent.deepCopy();
-        applyPresignedUrlToImageSrcRecursive(jsonNode);
-        return jsonNode;
+    @NotNull
+    private static String getFileNameFrom(String imageSrcUrl) {
+        try {
+            Path path = Paths.get(new URI(imageSrcUrl).getPath());
+            return path.getFileName().toString();
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
+
 
     public PresignedUrlDTO getPresignedUrl() {
         String randomImageName = IdGenerator.generateUniqueId();
@@ -54,19 +61,27 @@ public class ImageService {
         while (imageRepository.findByFileName(randomImageName) != null) {
             randomImageName = IdGenerator.generateUniqueId();
         }
-        String fileName = "/" + String.join(".", randomImageName,
-                mimeType.getSubtype()); //TODO: TEMPORARY MEASURE: slash is for seaweedfs 3.02 MUST BE CHANGED WHEN SEAWEEDFS FIXED
+        String fileName = String.join(".", randomImageName, mimeType.getSubtype());
+
+        // save image temporary
+        imageRepository.save(new Image(fileName, mimeType.getSubtype(),
+                String.join("/", minioService.getImageEndPointUrl(), fileName),
+                ZonedDateTime.now().plusHours(167)));
+
         return new PresignedPostDto(
-                fileName,
+                "/" + fileName,
                 minioService.getImageEndPointUrl(),
-                minioService.getPresignedPost(fileName)
+                minioService.getPresignedPost("/" + fileName)
+                //TODO: TEMPORARY MEASURE: slash is for seaweedfs 3.02 MUST BE CHANGED WHEN SEAWEEDFS FIXED
         );
     }
 
     public Set<String> getImageFileNameSet(JsonNode jsonContent) {
         return jsonContent.findParents("type").stream()
                 .filter(jsonNode -> jsonNode.get("type").asText().equals("image"))
-                .map(jsonNode -> jsonNode.get("altText").asText()).collect(Collectors.toSet());
+                .map(jsonNode -> jsonNode.get("src").asText())
+                .map(ImageService::getFileNameFrom)
+                .collect(Collectors.toSet());
     }
 
     @Transactional
@@ -154,30 +169,14 @@ public class ImageService {
         return image.getUrl();
     }
 
-    private void applyPresignedUrlToImageSrcRecursive(JsonNode node) {
-        if (node.isObject()) {
-            ObjectNode objNode = (ObjectNode) node;
-            JsonNode typeNode = objNode.get("type");
-            if (typeNode != null && typeNode.isTextual() && "image".equals(typeNode.asText())) {
-                if (objNode.has("altText") && objNode.has("src")) {
-                    String srcUrl = getSrcUrl(objNode.get("altText").asText());
-                    objNode.put("src", srcUrl);
-                }
-            }
-            objNode.fieldNames().forEachRemaining(fieldName -> {
-                applyPresignedUrlToImageSrcRecursive(objNode.get(fieldName));
-            });
-        } else if (node.isArray()) {
-            for (JsonNode element : node) {
-                applyPresignedUrlToImageSrcRecursive(element);
-            }
-        }
-    }
-
     private String getThumbnailImageFileName(JsonNode content) {
-        Optional<String> first = content.findParents("type").stream()
-                .filter(t -> t.get("type").asText().equals("image")).map(t -> t.get("altText").asText()).findFirst();
-        return first.orElse(null);
+        String imageSrcUrl = content.findParents("type").stream()
+                .filter(t -> t.get("type").asText().equals("image")).map(t -> t.get("src").asText()).findFirst()
+                .orElse(null);
+        if (imageSrcUrl == null) {
+            return null;
+        }
+        return getFileNameFrom(imageSrcUrl);
     }
 
     public String getThumbnailSrcUrl(String fileName) {

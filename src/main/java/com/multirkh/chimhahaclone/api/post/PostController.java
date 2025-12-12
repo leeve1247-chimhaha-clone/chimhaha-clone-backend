@@ -45,11 +45,10 @@ public class PostController {
     }
 
     @PostMapping("/save")
+    @RolesAllowed("USER")
     public String createPost(
             @RequestBody PostReceived request
     ) {
-        Collection<? extends GrantedAuthority> authorities = SecurityContextHolder.getContext().getAuthentication()
-                .getAuthorities();
         postService.validateCreatePost(request);
         return postService.createPost(request);
     }

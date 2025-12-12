@@ -132,8 +132,7 @@ public class PostService {
         }
         Post selfLikedPost = postRepository.findSelfLiked(post);
         boolean selfLiked = selfLikedPost != null;
-        JsonNode appliedPresignedUrlToImageSrcContent = imageService.applyPresignedUrlToImageSrc(post.getJsonContent());
-        return new PostDetailDto(post, appliedPresignedUrlToImageSrcContent, selfLiked);
+        return new PostDetailDto(post, post.getJsonContent(), selfLiked);
     }
 
     public List<PostListComponentDto> findPostList() {
