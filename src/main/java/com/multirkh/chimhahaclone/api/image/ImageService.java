@@ -13,15 +13,12 @@ import com.multirkh.chimhahaclone.common.minio.MinioService;
 import com.multirkh.chimhahaclone.common.util.IdGenerator;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,13 +49,18 @@ public class ImageService {
         return new PresignedUrlDTO(minioService.getPresignedUrl(randomImageName), randomImageName);
     }
 
-    public PresignedPostDto getPresignedPost(MimeType mimeType){
+    public PresignedPostDto getPresignedPost(MimeType mimeType) {
         String randomImageName = IdGenerator.generateUniqueId();
         while (imageRepository.findByFileName(randomImageName) != null) {
             randomImageName = IdGenerator.generateUniqueId();
         }
-        String fileName = String.join(".", randomImageName, mimeType.getSubtype());
-        return new PresignedPostDto(minioService.getPresignedPost(fileName), fileName, minioService.getImageEndPointUrl());
+        String fileName = "/" + String.join(".", randomImageName,
+                mimeType.getSubtype()); //TODO: TEMPORARY MEASURE: slash is for seaweedfs 3.02 MUST BE CHANGED WHEN SEAWEEDFS FIXED
+        return new PresignedPostDto(
+                fileName,
+                minioService.getImageEndPointUrl(),
+                minioService.getPresignedPost(fileName)
+        );
     }
 
     public Set<String> getImageFileNameSet(JsonNode jsonContent) {
