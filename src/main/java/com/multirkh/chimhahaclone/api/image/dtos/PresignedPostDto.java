@@ -8,7 +8,11 @@ public class PresignedPostDto {
     String url;
     Map<String, String> fields;
 
-    public PresignedPostDto(Map<String, String> presignedPost, String fileName, String url) {
+    public PresignedPostDto(
+            String fileName,
+            String url,
+            Map<String, String> presignedPost
+    ) {
         this.url = url;
         this.fields = presignedPost;
         this.fields.put("key", fileName);

@@ -67,7 +67,6 @@ public class MinioService {
         } catch (Exception e) {
             throw  new RuntimeException(e);
         }
-
     }
 
     public void deleteImages(Set<String> fileNames) {
@@ -187,6 +186,14 @@ public class MinioService {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public String getEndPointUrl() {
+        return exportUrl;
+    }
+
+    public String getImageBucket() {
+        return minioBucketName;
     }
 }
 
