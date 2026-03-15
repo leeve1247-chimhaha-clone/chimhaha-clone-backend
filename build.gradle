@@ -40,8 +40,9 @@ dependencies {
     // https://mvnrepository.com/artifact/net.coobird/thumbnailator
     implementation 'net.coobird:thumbnailator:0.4.20'
 
-    // https://mvnrepository.com/artifact/io.minio/minio
-    implementation 'io.minio:minio:8.6.0'
+    // AWS SDK v2 S3
+    implementation platform('software.amazon.awssdk:bom:2.29.0')
+    implementation 'software.amazon.awssdk:s3'
 
     // mysql
     runtimeOnly 'com.mysql:mysql-connector-j'

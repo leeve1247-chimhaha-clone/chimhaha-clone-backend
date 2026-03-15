@@ -1,5 +1,6 @@
 package com.multirkh.chimhahaclone.api.image.dtos;
 
+import java.util.HashMap;
 import java.util.Map;
 import lombok.Getter;
 
@@ -14,7 +15,7 @@ public class PresignedPostDto {
             Map<String, String> presignedPost
     ) {
         this.url = url;
-        this.fields = presignedPost;
+        this.fields = new HashMap<>(presignedPost);
         this.fields.put("key", fileName);
     }
 }

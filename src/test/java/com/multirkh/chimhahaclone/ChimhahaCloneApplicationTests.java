@@ -2,8 +2,8 @@ package com.multirkh.chimhahaclone;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.multirkh.chimhahaclone.common.minio.MinioConfig;
-import com.multirkh.chimhahaclone.common.minio.MinioService;
+import com.multirkh.chimhahaclone.common.s3.S3Config;
+import com.multirkh.chimhahaclone.common.s3.S3Service;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,9 +24,9 @@ class ChimhahaCloneApplicationTests {
     @MockitoBean
     private JwtDecoder jwtDecoder;
     @MockitoBean
-    private MinioConfig minioConfig;
+    private S3Config s3Config;
     @MockitoBean
-    private MinioService minioService;
+    private S3Service s3Service;
 
     @Test
     @DisplayName("Embedded Redis에 값을 저장하고 조회할 수 있다")
