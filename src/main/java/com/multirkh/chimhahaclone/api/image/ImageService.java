@@ -8,8 +8,7 @@ import com.multirkh.chimhahaclone.api.post.domain.Post;
 import com.multirkh.chimhahaclone.api.post.dto.PostReceived;
 import com.multirkh.chimhahaclone.api.post.image.PostImageRepository;
 import com.multirkh.chimhahaclone.api.post.image.domain.PostImage;
-import com.multirkh.chimhahaclone.common.s3.S3Service;
-import software.amazon.awssdk.services.s3.presigner.model.PresignedPostRequest;
+import com.multirkh.chimhahaclone.common.minio.MinioService;
 import com.multirkh.chimhahaclone.common.util.IdGenerator;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -35,7 +34,7 @@ import org.springframework.util.MimeType;
 public class ImageService {
 
     private final ImageRepository imageRepository;
-    private final S3Service s3Service;
+    private final MinioService minioService;
     private final PostImageRepository postImageRepository;
 
     @NotNull
@@ -54,7 +53,7 @@ public class ImageService {
         while (imageRepository.findByFileName(randomImageName) != null) {
             randomImageName = IdGenerator.generateUniqueId();
         }
-        return new PresignedUrlDTO(s3Service.getPresignedUrl(randomImageName), randomImageName);
+        return new PresignedUrlDTO(minioService.getPresignedUrl(randomImageName), randomImageName);
     }
 
     public PresignedPostDto getPresignedPost(MimeType mimeType) {
@@ -66,15 +65,14 @@ public class ImageService {
 
         // save image temporary
         imageRepository.save(new Image(fileName, mimeType.getSubtype(),
-                String.join("/", s3Service.getImageEndPointUrl(), fileName),
+                String.join("/", minioService.getImageEndPointUrl(), fileName),
                 ZonedDateTime.now().plusHours(167)));
 
-        //TODO: TEMPORARY MEASURE: slash is for seaweedfs 3.02 MUST BE CHANGED WHEN SEAWEEDFS FIXED
-        PresignedPostRequest presigned = s3Service.getPresignedPost("/" + fileName);
         return new PresignedPostDto(
                 "/" + fileName,
-                presigned.url().toString(),
-                presigned.signedFields()
+                minioService.getImageEndPointUrl(),
+                minioService.getPresignedPost("/" + fileName)
+                //TODO: TEMPORARY MEASURE: slash is for seaweedfs 3.02 MUST BE CHANGED WHEN SEAWEEDFS FIXED
         );
     }
 
@@ -154,8 +152,8 @@ public class ImageService {
     public String getSrcUrl(String fileName) {
         Image image = imageRepository.findByFileName(fileName);
         if (image == null) {
-            String srcUrl = s3Service.createOrRenewUrl(fileName);
-            String contentType = s3Service.getType(fileName);
+            String srcUrl = minioService.createOrRenewUrl(fileName);
+            String contentType = minioService.getType(fileName);
             imageRepository.save(new Image(
                     fileName,
                     contentType,
@@ -165,7 +163,7 @@ public class ImageService {
             return srcUrl;
         }
         if (image.getExpirationDate().isBefore(ZonedDateTime.now().plusHours(1))) {
-            String srcUrl = s3Service.createOrRenewUrl(fileName);
+            String srcUrl = minioService.createOrRenewUrl(fileName);
             image.setUrl(srcUrl);
         }
         return image.getUrl();
@@ -185,7 +183,7 @@ public class ImageService {
         Image rawImage = imageRepository.findByFileName(fileName);
         Image thumbNailImage = getOrCreateThumbnail(rawImage);
         if (thumbNailImage.getExpirationDate().isBefore(ZonedDateTime.now().plusHours(1))) {
-            String renewedUrl = s3Service.createOrRenewUrl(fileName);
+            String renewedUrl = minioService.createOrRenewUrl(fileName);
             thumbNailImage.setUrl(renewedUrl);
         }
         return thumbNailImage.getUrl();
@@ -195,7 +193,7 @@ public class ImageService {
         if (rawImage.getThumbNailImage() != null) {
             return rawImage.getThumbNailImage();
         }
-        String srcUrl = s3Service.createThumbnail(rawImage.getFileName());
+        String srcUrl = minioService.createThumbnail(rawImage.getFileName());
         Image thumbNailImage = new Image(rawImage, srcUrl, ZonedDateTime.now().plusHours(167));
         rawImage.setThumbNailImage(thumbNailImage);
         return imageRepository.save(thumbNailImage);
@@ -221,7 +219,7 @@ public class ImageService {
         if (oldThumbNailImage != null && newThumbNailImageFileName == null) {
             post.removeThumbNailImage();
             if (oldThumbNailImage.getThumbNailedPost().isEmpty()) {
-                s3Service.deleteThumbnail(oldThumbNailImage.getRawImage().getFileName());
+                minioService.deleteThumbnail(oldThumbNailImage.getRawImage().getFileName());
                 oldThumbNailImage.getRawImage().setThumbNailImage(null);
                 imageRepository.delete(oldThumbNailImage);
             }
@@ -250,7 +248,7 @@ public class ImageService {
         // Changed
         post.removeThumbNailImage();
         if (oldThumbNailImage.getThumbNailedPost().isEmpty()) {
-            s3Service.deleteThumbnail(oldThumbNailImage.getRawImage().getFileName());
+            minioService.deleteThumbnail(oldThumbNailImage.getRawImage().getFileName());
             oldThumbNailImage.getRawImage().setThumbNailImage(null);
             imageRepository.delete(oldThumbNailImage);
         }
@@ -266,7 +264,7 @@ public class ImageService {
         }
         post.removeThumbNailImage();
         if (thumbNailImage.getThumbNailedPost().isEmpty()) {
-            s3Service.deleteThumbnail(thumbNailImage.getRawImage().getFileName());
+            minioService.deleteThumbnail(thumbNailImage.getRawImage().getFileName());
             thumbNailImage.getRawImage().setThumbNailImage(null);
         }
     }
