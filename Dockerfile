@@ -1,9 +1,12 @@
+FROM gradle:8.13-jdk21-alpine AS build
+WORKDIR /app
+COPY . .
+RUN gradle build -x test --no-daemon
+
 FROM amazoncorretto:21-alpine
 RUN addgroup -S spring && adduser -S spring -G spring
+WORKDIR /app
+COPY --from=build /app/build/libs/*.jar app.jar
+COPY configs/config.properties configs/config.properties
 USER spring:spring
-ARG DEPENDENCY=build/dependency
-COPY ${DEPENDENCY}/BOOT-INF/lib /app/lib
-COPY ${DEPENDENCY}/META-INF /app/META-INF
-COPY ${DEPENDENCY}/BOOT-INF/classes /app
-copy ./configs/config.properties ./configs/config.properties
-ENTRYPOINT ["java","-cp","app:app/lib/*","com.multirkh.chimhahaclone.ChimhahaCloneApplication"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
