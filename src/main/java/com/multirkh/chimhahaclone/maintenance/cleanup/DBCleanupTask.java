@@ -1,10 +1,13 @@
 package com.multirkh.chimhahaclone.maintenance.cleanup;
 
 import com.multirkh.chimhahaclone.api.image.ImageRepository;
+import com.multirkh.chimhahaclone.api.image.ImageService;
 import com.multirkh.chimhahaclone.api.image.domain.Image;
 import com.multirkh.chimhahaclone.api.post.PostRepository;
+import com.multirkh.chimhahaclone.api.post.domain.Post;
 import com.multirkh.chimhahaclone.common.minio.MinioService;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -21,11 +24,18 @@ public class DBCleanupTask {
 
     private final PostRepository postRepository;
     private final ImageRepository imageRepository;
+    private final ImageService imageService;
     private final MinioService minioService;
 
     @Scheduled(cron = "0 0 0 * * *")
+    @Transactional
     public void cleanUpPost() {
-        postRepository.deleteAllByStatus_Deleted();
+        List<Post> deletedPosts = postRepository.findAllByStatus_Deleted();
+        for (Post post : deletedPosts) {
+            imageService.deleteThumbnailImage(post);
+            imageService.deletePostImage(post);
+        }
+        postRepository.deleteAll(deletedPosts);
     }
 
     /**

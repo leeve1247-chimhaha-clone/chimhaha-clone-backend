@@ -23,6 +23,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("Select p from Post p where p.id = :postId and p.status != 'DELETED'")
     Optional<Post> findByIdPostStatusNotDeleted(@Param("postId") Long postId);
 
-    @Query("Select p from Post p where p.status = 'DELETED'")
-    void deleteAllByStatus_Deleted();
+    @Query("SELECT p FROM Post p WHERE p.status = 'DELETED'")
+    List<Post> findAllByStatus_Deleted();
 }
