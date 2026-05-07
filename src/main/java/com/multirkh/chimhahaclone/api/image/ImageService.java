@@ -60,7 +60,10 @@ public class ImageService {
         if (sha256 != null && !sha256.isBlank()) {
             Image existing = imageRepository.findBySha256(sha256);
             if (existing != null) {
-                return PresignedPostDto.deduped(existing.getFileName());
+                // Match the leading-slash convention used by the non-dedup
+                // branch (TODO: SeaweedFS 3.02 workaround). Frontend then
+                // assembles the src URL identically in both branches.
+                return PresignedPostDto.deduped("/" + existing.getFileName());
             }
         }
 

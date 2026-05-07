@@ -97,7 +97,7 @@ class ImageServiceTest {
                 org.springframework.util.MimeType.valueOf("image/jpeg"), sha);
 
         assertThat(result.isAlreadyExists()).isTrue();
-        assertThat(result.getFields().get("key")).isEqualTo("existing.jpeg");
+        assertThat(result.getFields().get("key")).isEqualTo("/existing.jpeg");
         verify(imageRepository, never()).save(any(Image.class));
         verify(minioService, never()).getPresignedPost(anyString());
     }
