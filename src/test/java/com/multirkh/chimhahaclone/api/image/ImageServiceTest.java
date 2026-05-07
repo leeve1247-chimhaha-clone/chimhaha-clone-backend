@@ -2,7 +2,11 @@ package com.multirkh.chimhahaclone.api.image;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -15,10 +19,12 @@ import com.multirkh.chimhahaclone.api.image.dtos.PresignedUrlDTO;
 import com.multirkh.chimhahaclone.api.post.domain.Post;
 import com.multirkh.chimhahaclone.api.post.dto.PostReceived;
 import com.multirkh.chimhahaclone.api.post.image.PostImageRepository;
+import com.multirkh.chimhahaclone.api.post.image.domain.PostImage;
 import com.multirkh.chimhahaclone.common.minio.MinioService;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -244,6 +250,61 @@ class ImageServiceTest {
 
         verify(post).removeThumbNailImage();
         verify(minioService).deleteThumbnail(FILE_NAME);
+    }
+
+    // ─── deletePostImage (S3 cleanup) ─────────────────────────────────────────
+
+    @Test
+    @DisplayName("deletePostImage: 다른 게시글에서 사용 안 하는 이미지는 S3와 DB에서 모두 삭제한다")
+    void deletePostImage_allOrphan_shouldDeleteFromS3AndDB() {
+        Post post = mock(Post.class);
+        Image image = new Image("a.png", "image/png", "url-a",
+                ZonedDateTime.now().plusHours(168));
+        PostImage postImage = mock(PostImage.class);
+        image.getPostImages().add(postImage);
+
+        when(postImageRepository.findDistinctImageByPost(post)).thenReturn(Set.of(image));
+        when(postImageRepository.findAllByPostAndImageIn(eq(post), anySet()))
+                .thenReturn(Set.of(postImage));
+
+        imageService.deletePostImage(post);
+
+        verify(minioService).deleteImages(Set.of("a.png"));
+        verify(imageRepository).deleteAllByImages(Set.of(image));
+    }
+
+    @Test
+    @DisplayName("deletePostImage: 다른 게시글에서도 사용 중인 이미지는 S3·DB에서 삭제하지 않는다")
+    void deletePostImage_sharedImage_shouldNotDeleteFromS3() {
+        Post post = mock(Post.class);
+        Image sharedImage = new Image("shared.png", "image/png", "url-shared",
+                ZonedDateTime.now().plusHours(168));
+        PostImage postImageThis = mock(PostImage.class);
+        PostImage postImageOther = mock(PostImage.class);
+        sharedImage.getPostImages().add(postImageThis);
+        sharedImage.getPostImages().add(postImageOther);
+
+        when(postImageRepository.findDistinctImageByPost(post)).thenReturn(Set.of(sharedImage));
+        when(postImageRepository.findAllByPostAndImageIn(eq(post), anySet()))
+                .thenReturn(Set.of(postImageThis));
+
+        imageService.deletePostImage(post);
+
+        verify(minioService, never()).deleteImages(anySet());
+        verify(imageRepository).deleteAllByImages(argThat(Set::isEmpty));
+    }
+
+    @Test
+    @DisplayName("deletePostImage: 게시글에 이미지가 없으면 minio 삭제를 호출하지 않는다")
+    void deletePostImage_noImages_shouldNotCallMinio() {
+        Post post = mock(Post.class);
+        when(postImageRepository.findDistinctImageByPost(post)).thenReturn(Set.of());
+        when(postImageRepository.findAllByPostAndImageIn(eq(post), anySet()))
+                .thenReturn(Set.of());
+
+        imageService.deletePostImage(post);
+
+        verify(minioService, never()).deleteImages(anySet());
     }
 
     // ─── 헬퍼 ─────────────────────────────────────────────────────────────────

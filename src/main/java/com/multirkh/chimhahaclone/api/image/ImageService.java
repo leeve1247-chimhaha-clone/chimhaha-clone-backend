@@ -146,6 +146,12 @@ public class ImageService {
         }
         post.removePostImages(toBeDeletePostImages);
         postImageRepository.deleteAllByPostImages(toBeDeletePostImages);
+        if (!trash.isEmpty()) {
+            Set<String> trashFileNames = trash.stream()
+                    .map(Image::getFileName)
+                    .collect(Collectors.toSet());
+            minioService.deleteImages(trashFileNames);
+        }
         imageRepository.deleteAllByImages(trash);
     }
 
