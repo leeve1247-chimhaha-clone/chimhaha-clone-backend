@@ -56,7 +56,14 @@ public class ImageService {
         return new PresignedUrlDTO(minioService.getPresignedUrl(randomImageName), randomImageName);
     }
 
-    public PresignedPostDto getPresignedPost(MimeType mimeType) {
+    public PresignedPostDto getPresignedPost(MimeType mimeType, String sha256) {
+        if (sha256 != null && !sha256.isBlank()) {
+            Image existing = imageRepository.findBySha256(sha256);
+            if (existing != null) {
+                return PresignedPostDto.deduped(existing.getFileName());
+            }
+        }
+
         String randomImageName = IdGenerator.generateUniqueId();
         while (imageRepository.findByFileName(randomImageName) != null) {
             randomImageName = IdGenerator.generateUniqueId();
@@ -66,7 +73,8 @@ public class ImageService {
         // save image temporary
         imageRepository.save(new Image(fileName, mimeType.getSubtype(),
                 String.join("/", minioService.getImageEndPointUrl(), fileName),
-                ZonedDateTime.now().plusHours(167)));
+                ZonedDateTime.now().plusHours(167),
+                sha256));
 
         return new PresignedPostDto(
                 "/" + fileName,

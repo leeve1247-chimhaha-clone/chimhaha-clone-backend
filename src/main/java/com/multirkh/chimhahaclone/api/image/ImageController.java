@@ -23,8 +23,11 @@ public class ImageController {
 
     @RolesAllowed("USER")
     @GetMapping("/get/presigned-post")
-    public PresignedPostDto getPresignedPost(@RequestHeader("X-File-MimeType") MimeType mimeType) {
-        return imageService.getPresignedPost(mimeType);
+    public PresignedPostDto getPresignedPost(
+            @RequestHeader("X-File-MimeType") MimeType mimeType,
+            @RequestHeader(value = "X-File-Sha256", required = false) String sha256
+    ) {
+        return imageService.getPresignedPost(mimeType, sha256);
     }
 
     @GetMapping("/get/src-url")

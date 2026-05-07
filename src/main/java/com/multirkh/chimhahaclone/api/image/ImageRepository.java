@@ -10,6 +10,8 @@ import org.springframework.data.jpa.repository.Query;
 public interface ImageRepository extends JpaRepository<Image, Long> {
     Image findByFileName(String fileName);
 
+    Image findBySha256(String sha256);
+
     @Query("SELECT i FROM Image i WHERE i.fileName IN :fileNames")
     Set<Image> findByFileNames(Set<String> fileNames);
 

@@ -76,12 +76,49 @@ class ImageServiceTest {
         when(imageRepository.save(any(Image.class))).thenAnswer(i -> i.getArgument(0));
 
         PresignedPostDto result = imageService.getPresignedPost(
-                org.springframework.util.MimeType.valueOf("image/jpeg"));
+                org.springframework.util.MimeType.valueOf("image/jpeg"), null);
 
         assertThat(result.getUrl()).isEqualTo(ENDPOINT_URL);
         assertThat(result.getFields()).containsKey("key");
         assertThat(result.getFields().get("key")).endsWith(".jpeg");
+        assertThat(result.isAlreadyExists()).isFalse();
         verify(imageRepository).save(any(Image.class));
+    }
+
+    @Test
+    @DisplayName("getPresignedPost: 동일 sha256의 Image가 이미 있으면 alreadyExists=true로 응답하고 새 파일을 생성하지 않는다")
+    void getPresignedPost_dedupHit_returnsAlreadyExists() {
+        String sha = "abc123def";
+        Image existing = new Image("existing.jpeg", "image/jpeg", "url-existing",
+                ZonedDateTime.now().plusHours(168), sha);
+        when(imageRepository.findBySha256(sha)).thenReturn(existing);
+
+        PresignedPostDto result = imageService.getPresignedPost(
+                org.springframework.util.MimeType.valueOf("image/jpeg"), sha);
+
+        assertThat(result.isAlreadyExists()).isTrue();
+        assertThat(result.getFields().get("key")).isEqualTo("existing.jpeg");
+        verify(imageRepository, never()).save(any(Image.class));
+        verify(minioService, never()).getPresignedPost(anyString());
+    }
+
+    @Test
+    @DisplayName("getPresignedPost: sha256는 있지만 매칭되는 Image가 없으면 일반 흐름으로 새 presigned를 발급하고 hash를 함께 저장한다")
+    void getPresignedPost_dedupMiss_savesWithHash() {
+        String sha = "newhash";
+        when(imageRepository.findBySha256(sha)).thenReturn(null);
+        when(imageRepository.findByFileName(anyString())).thenReturn(null);
+        when(minioService.getImageEndPointUrl()).thenReturn(ENDPOINT_URL);
+        Map<String, String> formFields = new HashMap<>(Map.of("policy", "p"));
+        when(minioService.getPresignedPost(anyString())).thenReturn(formFields);
+        when(imageRepository.save(any(Image.class))).thenAnswer(i -> i.getArgument(0));
+
+        PresignedPostDto result = imageService.getPresignedPost(
+                org.springframework.util.MimeType.valueOf("image/jpeg"), sha);
+
+        assertThat(result.isAlreadyExists()).isFalse();
+        verify(imageRepository).save(org.mockito.ArgumentMatchers.argThat(
+                (Image img) -> sha.equals(img.getSha256())));
     }
 
     // ─── getSrcUrl ────────────────────────────────────────────────────────────

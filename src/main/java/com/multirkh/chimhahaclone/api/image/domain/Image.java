@@ -45,6 +45,8 @@ public class Image {
     private String url;
     @Setter
     private ZonedDateTime expirationDate;
+    @Column(unique = true, length = 64)
+    private String sha256;
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "raw_image_id")
     private Image rawImage;
@@ -63,6 +65,11 @@ public class Image {
         this.contentType = contentType;
         this.url = url;
         this.expirationDate = expirationDate;
+    }
+
+    public Image(String fileName, String contentType, String url, ZonedDateTime expirationDate, String sha256) {
+        this(fileName, contentType, url, expirationDate);
+        this.sha256 = sha256;
     }
 
     public Image(Image rawImage, String url, ZonedDateTime expirationDate) {
