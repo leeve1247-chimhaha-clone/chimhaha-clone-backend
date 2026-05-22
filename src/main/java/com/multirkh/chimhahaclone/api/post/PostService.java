@@ -10,6 +10,7 @@ import com.multirkh.chimhahaclone.api.post.domain.PostStatus;
 import com.multirkh.chimhahaclone.api.post.dto.PostDetailDto;
 import com.multirkh.chimhahaclone.api.post.dto.PostListComponentDto;
 import com.multirkh.chimhahaclone.api.post.dto.PostReceived;
+import com.multirkh.chimhahaclone.api.post.event.PostCreatedEvent;
 import com.multirkh.chimhahaclone.api.post.likes.PostLikesUserRepository;
 import com.multirkh.chimhahaclone.api.post.likes.domain.PostLikesUser;
 import com.multirkh.chimhahaclone.api.post.likes.dto.LikeRequest;
@@ -17,12 +18,14 @@ import com.multirkh.chimhahaclone.api.user.UserRepository;
 import com.multirkh.chimhahaclone.api.user.UserService;
 import com.multirkh.chimhahaclone.api.user.domain.User;
 import com.multirkh.chimhahaclone.common.exception.FindDeletedPostException;
+import com.multirkh.chimhahaclone.common.outbox.OutboxEventPublisher;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -35,7 +38,9 @@ public class PostService {
     private final PostCategoryRepository postCategoryRepository;
     private final ImageService imageService;
     private final UserService userService;
+    private final OutboxEventPublisher outboxEventPublisher;
 
+    @Transactional
     public String createPost(PostReceived request) {
         User user = userService.getUser();
         String title = request.getTitle();
@@ -46,6 +51,13 @@ public class PostService {
 
         imageService.createThumbnailImage(post);
         imageService.createPostImages(post);
+
+        outboxEventPublisher.publish(
+            "Post",
+            post.getId().toString(),
+            "PostCreated",
+            PostCreatedEvent.from(post)
+        );
 
         return post.getId().toString();
     }

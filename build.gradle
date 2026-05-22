@@ -29,6 +29,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security' //security context holder
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis' //redis
+    implementation 'org.springframework.kafka:spring-kafka'
 
     // https://mvnrepository.com/artifact/io.hypersistence/hypersistence-utils-hibernate-63
     implementation 'io.hypersistence:hypersistence-utils-hibernate-63:3.9.11'
