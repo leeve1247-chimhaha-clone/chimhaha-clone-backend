@@ -2,23 +2,25 @@ package com.multirkh.chimhahaclone.common.outbox;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.argThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.header.Header;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -53,10 +55,15 @@ class OutboxPollerTest {
         return ev;
     }
 
-    private CompletableFuture<SendResult<String, String>> successfulSend() {
-        RecordMetadata meta = new RecordMetadata(new TopicPartition("post.events.v1", 0), 0L, 0, 0L, 0, 0);
+    private CompletableFuture<SendResult<String, String>> successfulSend(String topic) {
+        RecordMetadata meta = new RecordMetadata(new TopicPartition(topic, 0), 0L, 0, 0L, 0, 0);
         SendResult<String, String> result = new SendResult<>(null, meta);
         return CompletableFuture.completedFuture(result);
+    }
+
+    private static String headerValue(ProducerRecord<?, ?> record, String name) {
+        Header h = record.headers().lastHeader(name);
+        return h == null ? null : new String(h.value(), StandardCharsets.UTF_8);
     }
 
     @Test
@@ -70,15 +77,23 @@ class OutboxPollerTest {
     }
 
     @Test
-    @DisplayName("pending Post events → publish to post.events.v1 with aggregateId as key and mark publishedAt")
+    @DisplayName("pending Post events → publish ProducerRecord with event-id header and mark publishedAt")
     void pendingEventsArePublishedAndMarked() {
         OutboxEvent event = newPostEvent("42", "hi");
         when(outboxEventRepository.findPending(any(PageRequest.class))).thenReturn(List.of(event));
-        when(kafkaTemplate.send(eq("post.events.v1"), eq("42"), anyString())).thenReturn(successfulSend());
+        when(kafkaTemplate.send(any(ProducerRecord.class))).thenReturn(successfulSend("post.events.v1"));
 
         poller.publishPending();
 
-        verify(kafkaTemplate).send("post.events.v1", "42", event.getPayload().toString());
+        ArgumentCaptor<ProducerRecord<String, String>> captor = ArgumentCaptor.forClass(ProducerRecord.class);
+        verify(kafkaTemplate).send(captor.capture());
+        ProducerRecord<String, String> sent = captor.getValue();
+        assertThat(sent.topic()).isEqualTo("post.events.v1");
+        assertThat(sent.key()).isEqualTo("42");
+        assertThat(sent.value()).isEqualTo(event.getPayload().toString());
+        assertThat(headerValue(sent, OutboxPoller.HEADER_EVENT_ID)).isEqualTo("42");
+        assertThat(headerValue(sent, OutboxPoller.HEADER_EVENT_TYPE)).isEqualTo("PostCreated");
+        assertThat(headerValue(sent, OutboxPoller.HEADER_AGGREGATE_TYPE)).isEqualTo("Post");
         assertThat(event.getPublishedAt()).isNotNull();
     }
 
@@ -90,8 +105,10 @@ class OutboxPollerTest {
         when(outboxEventRepository.findPending(any(PageRequest.class))).thenReturn(List.of(failing, succeeding));
         CompletableFuture<SendResult<String, String>> failed = new CompletableFuture<>();
         failed.completeExceptionally(new RuntimeException("kafka down"));
-        when(kafkaTemplate.send(eq("post.events.v1"), eq("1"), anyString())).thenReturn(failed);
-        when(kafkaTemplate.send(eq("post.events.v1"), eq("2"), anyString())).thenReturn(successfulSend());
+        when(kafkaTemplate.send(argThat((ProducerRecord<String, String> r) -> r != null && "1".equals(r.key()))))
+            .thenReturn(failed);
+        when(kafkaTemplate.send(argThat((ProducerRecord<String, String> r) -> r != null && "2".equals(r.key()))))
+            .thenReturn(successfulSend("post.events.v1"));
 
         poller.publishPending();
 
@@ -106,11 +123,13 @@ class OutboxPollerTest {
         OutboxEvent commentEvent = new OutboxEvent("Comment", "7", "CommentCreated", payload);
         ReflectionTestUtils.setField(commentEvent, "id", 7L);
         when(outboxEventRepository.findPending(any(PageRequest.class))).thenReturn(List.of(commentEvent));
-        when(kafkaTemplate.send(eq("comment.events.v1"), eq("7"), anyString())).thenReturn(successfulSend());
+        when(kafkaTemplate.send(any(ProducerRecord.class))).thenReturn(successfulSend("comment.events.v1"));
 
         poller.publishPending();
 
-        verify(kafkaTemplate).send("comment.events.v1", "7", commentEvent.getPayload().toString());
-        verify(kafkaTemplate, never()).send(eq("post.events.v1"), anyString(), anyString());
+        ArgumentCaptor<ProducerRecord<String, String>> captor = ArgumentCaptor.forClass(ProducerRecord.class);
+        verify(kafkaTemplate).send(captor.capture());
+        assertThat(captor.getValue().topic()).isEqualTo("comment.events.v1");
+        assertThat(captor.getValue().key()).isEqualTo("7");
     }
 }
