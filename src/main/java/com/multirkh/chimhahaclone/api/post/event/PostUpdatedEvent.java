@@ -4,20 +4,14 @@ import com.multirkh.chimhahaclone.api.post.domain.Post;
 import java.time.Instant;
 import java.util.List;
 
-public record PostCreatedEvent(
+public record PostUpdatedEvent(
     String postId,
-    String authorId,
-    String categoryKey,
-    String title,
     List<String> imageFileNames,
     Instant occurredAt
 ) {
-    public static PostCreatedEvent from(Post post, List<String> imageFileNames) {
-        return new PostCreatedEvent(
+    public static PostUpdatedEvent from(Post post, List<String> imageFileNames) {
+        return new PostUpdatedEvent(
             post.getId().toString(),
-            post.getUser().getUserAuthId(),
-            post.getCategory().getKey(),
-            post.getTitle(),
             imageFileNames,
             Instant.now()
         );

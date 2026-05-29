@@ -28,11 +28,7 @@ public class PostListComponentDto {
         this.category = post.getCategory().getKey();
         this.likes = post.getLikes();
         this.postId = post.getId().intValue();
-        if (post.getThumbNailImage() != null) {
-            this.titleImageFileName = post.getThumbNailImage().getRawImage().getFileName();
-        } else {
-            this.titleImageFileName = null;
-        }
+        this.titleImageFileName = post.getTitleImageFileName();
         this.commentsCount = post.getCommentsCount();
     }
 }

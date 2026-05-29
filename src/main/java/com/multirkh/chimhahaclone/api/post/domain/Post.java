@@ -2,9 +2,7 @@ package com.multirkh.chimhahaclone.api.post.domain;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.multirkh.chimhahaclone.api.comment.domain.Comment;
-import com.multirkh.chimhahaclone.api.image.domain.Image;
 import com.multirkh.chimhahaclone.api.post.category.domain.PostCategory;
-import com.multirkh.chimhahaclone.api.post.image.domain.PostImage;
 import com.multirkh.chimhahaclone.api.post.likes.domain.PostLikesUser;
 import com.multirkh.chimhahaclone.api.user.domain.User;
 import io.hypersistence.utils.hibernate.type.json.JsonType;
@@ -44,8 +42,6 @@ public class Post {
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private final List<Comment> comments = new ArrayList<>();
-    @OneToMany(mappedBy = "post")
-    private final Set<PostImage> postImages = new HashSet<>();
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private final Set<PostLikesUser> postLikesUsers = new HashSet<>();
     @Id
@@ -68,9 +64,6 @@ public class Post {
     private User user;
     @Setter
     private String titleImageFileName;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "thumb_nail_image_id")
-    private Image thumbNailImage;
     @Setter
     private Integer commentsCount;
     @Setter
@@ -86,19 +79,6 @@ public class Post {
     private Integer likes;
 
     //신규 생성
-    public Post(String title, JsonNode jsonContent, User user, PostCategory postCategory, Image thumbNailImage) {
-        this.title = title;
-        this.jsonContent = jsonContent;
-        this.user = user;
-        this.views = 0;
-        this.likes = 0;
-        this.category = postCategory;
-        this.status = PostStatus.POSTED;
-        this.addThumbNailImage(thumbNailImage);
-        this.commentsCount = 0;
-    }
-
-    //신규 생성 (이미지 없음)
     public Post(String title, JsonNode jsonContent, User user, PostCategory postCategory) {
         this.title = title;
         this.jsonContent = jsonContent;
@@ -108,26 +88,5 @@ public class Post {
         this.category = postCategory;
         this.status = PostStatus.POSTED;
         this.commentsCount = 0;
-    }
-
-    public void addPostImages(Set<PostImage> postImageSet) {
-        this.postImages.addAll(postImageSet);
-
-    }
-
-    public void removePostImages(Set<PostImage> postImageSet) {
-        this.postImages.removeAll(postImageSet);
-    }
-
-    public void addThumbNailImage(Image thumbNailImage) {
-        this.thumbNailImage = thumbNailImage;
-        if (thumbNailImage != null) {
-            thumbNailImage.getThumbNailedPost().add(this);
-        }
-    }
-
-    public void removeThumbNailImage() {
-        thumbNailImage.getThumbNailedPost().remove(this);
-        this.thumbNailImage = null;
     }
 }

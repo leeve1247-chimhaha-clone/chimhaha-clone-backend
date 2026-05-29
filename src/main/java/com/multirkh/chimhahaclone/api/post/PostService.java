@@ -2,7 +2,6 @@ package com.multirkh.chimhahaclone.api.post;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.multirkh.chimhahaclone.api.comment.CommentRepository;
-import com.multirkh.chimhahaclone.api.image.ImageService;
 import com.multirkh.chimhahaclone.api.post.category.PostCategoryRepository;
 import com.multirkh.chimhahaclone.api.post.category.domain.PostCategory;
 import com.multirkh.chimhahaclone.api.post.domain.Post;
@@ -11,6 +10,8 @@ import com.multirkh.chimhahaclone.api.post.dto.PostDetailDto;
 import com.multirkh.chimhahaclone.api.post.dto.PostListComponentDto;
 import com.multirkh.chimhahaclone.api.post.dto.PostReceived;
 import com.multirkh.chimhahaclone.api.post.event.PostCreatedEvent;
+import com.multirkh.chimhahaclone.api.post.event.PostDeletedEvent;
+import com.multirkh.chimhahaclone.api.post.event.PostUpdatedEvent;
 import com.multirkh.chimhahaclone.api.post.likes.PostLikesUserRepository;
 import com.multirkh.chimhahaclone.api.post.likes.domain.PostLikesUser;
 import com.multirkh.chimhahaclone.api.post.likes.dto.LikeRequest;
@@ -19,6 +20,7 @@ import com.multirkh.chimhahaclone.api.user.UserService;
 import com.multirkh.chimhahaclone.api.user.domain.User;
 import com.multirkh.chimhahaclone.common.exception.FindDeletedPostException;
 import com.multirkh.chimhahaclone.common.outbox.OutboxEventPublisher;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +38,6 @@ public class PostService {
     private final UserRepository userRepository;
     private final PostLikesUserRepository postLikesUserRepository;
     private final PostCategoryRepository postCategoryRepository;
-    private final ImageService imageService;
     private final UserService userService;
     private final OutboxEventPublisher outboxEventPublisher;
 
@@ -48,15 +49,13 @@ public class PostService {
         JsonNode jsonContent = request.getContent();
 
         Post post = postRepository.save(new Post(title, jsonContent, user, postCategory));
-
-        imageService.createThumbnailImage(post);
-        imageService.createPostImages(post);
+        post.setTitleImageFileName(PostContentImages.firstFileName(jsonContent));
 
         outboxEventPublisher.publish(
             "Post",
             post.getId().toString(),
             "PostCreated",
-            PostCreatedEvent.from(post)
+            PostCreatedEvent.from(post, new ArrayList<>(PostContentImages.fileNames(jsonContent)))
         );
 
         return post.getId().toString();
@@ -73,26 +72,37 @@ public class PostService {
         return temp;
     }
 
+    @Transactional
     public String updatePost(PostReceived request) {
         Post post = postRepository.findById(Long.valueOf(request.getPostId())).orElseThrow();
         post.setTitle(request.getTitle());
         post.setCategory(findLastIdOfTheCategory(request.getPostCategoryKey()));
         post.setJsonContent(request.getContent());
-        Post updatedPost = postRepository.save(post); //postImage not yet updated
+        post.setTitleImageFileName(PostContentImages.firstFileName(request.getContent()));
+        Post updatedPost = postRepository.save(post);
 
-        imageService.updateThumbnailImage(updatedPost, request);
-        imageService.updatePostImage(updatedPost, request);
+        outboxEventPublisher.publish(
+            "Post",
+            updatedPost.getId().toString(),
+            "PostUpdated",
+            PostUpdatedEvent.from(updatedPost, new ArrayList<>(PostContentImages.fileNames(request.getContent())))
+        );
 
         return updatedPost.getId().toString();
     }
 
+    @Transactional
     public String deletePost(Post post) {
         post.setJsonContent(null);
         post.setStatus(PostStatus.DELETED);
         Post savedPost = postRepository.save(post);
 
-        imageService.deleteThumbnailImage(savedPost);
-        imageService.deletePostImage(savedPost);
+        outboxEventPublisher.publish(
+            "Post",
+            savedPost.getId().toString(),
+            "PostDeleted",
+            PostDeletedEvent.from(savedPost)
+        );
 
         return savedPost.getId().toString();
     }
